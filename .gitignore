@@ -1,0 +1,6 @@
+# ignore cargo build target
+/target
+
+# ignore idea's project files
+/.idea
+/.idea/**/*
