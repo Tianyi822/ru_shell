@@ -8,4 +8,13 @@ mod test {
             "ls -l -h -t".to_string(),
         );
     }
+
+    #[test]
+    fn test_lexer_ls() {
+        let l = Lexer::new(
+            "ls -l -h -t".to_string(),
+        );
+        
+        println!("{:#?}", l);
+    }
 }
