@@ -1,7 +1,9 @@
 // Token type will be used in Token
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum TokenType {
-    Command, // command: ls, cd, pwd, echo, exit, etc.
+    // Commands
+    Ls, // ls
+    Cd, // cd
 
     Num, // integer number: 1, 2, 3, etc. Or float number: 1.0, 2.0, 3.0, etc.
 
