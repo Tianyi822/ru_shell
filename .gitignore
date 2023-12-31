@@ -4,3 +4,6 @@
 # ignore idea's project files
 /.idea
 /.idea/**/*
+
+# ignore vscode's project files
+/.vscode
