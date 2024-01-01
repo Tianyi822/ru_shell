@@ -55,6 +55,7 @@ pub struct Token {
 }
 
 impl Token {
+    #[allow(dead_code)]
     pub fn new(token_type: TokenType, literal: String) -> Token {
         Token {
             token_type,
