@@ -7,7 +7,7 @@ use crate::token::token::{Token, TokenType};
 enum State {
     Start,
 
-    Ident,
+    Literal,
 
     // ls command
     LsCommandState1,
@@ -25,6 +25,7 @@ enum State {
     // short parameter (-short)
     ShortParam,
     // long parameter (--long)
+    LongParam1,
     LongParam,
 
     // This state means that the lexer has reached the end of the command.
@@ -41,7 +42,7 @@ pub struct Lexer {
     start_index: RefCell<usize>,
 
     // Store the tokens that are parsed.
-    tokens: RefCell<Vec<Token>>,
+    pub tokens: RefCell<Vec<Token>>,
 
     // This is a key field to show the state about lexer at now.
     // It's used to define the type of the token currently.
@@ -70,6 +71,7 @@ impl Lexer {
             match state {
                 State::Start => self.trans_state(index, c),
 
+                // =============== ls command ===============
                 State::LsCommandState1 => {
                     if *c == 's' {
                         *(self.cur_state.borrow_mut()) = State::LsCommandState;
@@ -82,17 +84,27 @@ impl Lexer {
                     self.store_token(state, index);
                 }
 
-                State::CdCommandState1 => {}
+                // =============== cd command ===============
+                State::CdCommandState1 => {
+                    if *c == 'd' {
+                        *(self.cur_state.borrow_mut()) = State::CdCommandState;
+                    } else {
+                        self.trans_state(index, c);
+                    }
+                }
 
-                State::CdCommandState => {}
+                State::CdCommandState => {
+                    self.store_token(state, index);
+                }
 
                 State::Num => {}
 
+                // =============== parameter ===============
                 State::Param => {
                     if c.is_alphabetic() {
                         *(self.cur_state.borrow_mut()) = State::ShortParam;
                     } else if *c == '-' {
-                        *(self.cur_state.borrow_mut()) = State::LongParam;
+                        *(self.cur_state.borrow_mut()) = State::LongParam1;
                     }
                 }
 
@@ -100,9 +112,20 @@ impl Lexer {
                     self.store_token(state, index);
                 }
 
-                State::LongParam => {}
+                State::LongParam1 => {
+                    if c.is_alphabetic() {
+                        *(self.cur_state.borrow_mut()) = State::LongParam;
+                    }
+                }
 
-                State::Ident => {}
+                State::LongParam =>{
+                    if !c.is_alphanumeric() {
+                        self.store_token(state, index);
+                    }
+                }
+
+                // =============== cd command ===============
+                State::Literal => {}
 
                 State::End => {}
             }
@@ -141,6 +164,7 @@ impl Lexer {
             // Reset lexer state
             *state = State::Start;
         } else {
+            *start_index = self.command.len() - 1;
             *state = State::End;
         }
     }
@@ -184,14 +208,11 @@ impl Lexer {
     // Select the state by the current char.
     fn select_state(&self, c: &char) -> State {
         match c {
-            ' ' => State::Start,
             'l' => State::LsCommandState1,
-            's' => State::LsCommandState,
             'c' => State::CdCommandState1,
-            'd' => State::CdCommandState,
             '0'..='9' => State::Num,
             '-' => State::Param,
-            _ => State::Ident,
+            _ => State::Literal,
         }
     }
 }
