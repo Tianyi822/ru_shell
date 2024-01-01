@@ -1,9 +1,14 @@
 // Token type will be used in Token
+#[allow(dead_code)]
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum TokenType {
     // Commands
     Ls, // ls
     Cd, // cd
+
+    // Param
+    ShortParam,
+    LongParam,
 
     Num, // integer number: 1, 2, 3, etc. Or float number: 1.0, 2.0, 3.0, etc.
 
