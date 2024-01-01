@@ -3,7 +3,7 @@ use std::cell::RefCell;
 use crate::token::token::{Token, TokenType};
 
 // Each state represents the stage to which the command has currently been parsed by the lexer.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum State {
     Start,
 
@@ -134,15 +134,15 @@ impl Lexer {
             .borrow_mut()
             .push(Token::new(token_type, literal));
 
-        // Move start index to end index for ready to read next token.
+        // Judge whether the state should be reset or be end.
         if cur_index < self.command.len() {
+            // Move start index to end index for ready to read next token.
             *start_index = self.move_index_to_next_non_blank_char(cur_index);
+            // Reset lexer state
+            *state = State::Start;
         } else {
             *state = State::End;
-            return;
         }
-        // Reset lexer state
-        *state = State::Start;
     }
 
     fn move_index_to_next_non_blank_char(&self, cur_index: usize) -> usize {
