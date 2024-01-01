@@ -10,7 +10,17 @@ mod test {
     }
 
     #[test]
-    fn test_lexer_ls() {
+    fn test_lexer_one_param() {
+        let l = Lexer::new(
+            "ls -t".to_string(),
+        );
+        
+        println!("{:#?}", l);
+    }
+
+
+    #[test]
+    fn test_lexer_more_short_param() {
         let l = Lexer::new(
             "ls -l -h -t".to_string(),
         );

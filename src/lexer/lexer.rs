@@ -1,9 +1,6 @@
 use std::cell::RefCell;
 
-use crate::token::{
-    self,
-    token::{Token, TokenType},
-};
+use crate::token::token::{Token, TokenType};
 
 // Each state represents the stage to which the command has currently been parsed by the lexer.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -14,18 +11,17 @@ enum State {
 
     // ls command
     LsCommandState1,
-    LsCommandState2,
+    LsCommandState,
 
     // cd command
     CdCommandState1,
-    CdCommandState2,
+    CdCommandState,
 
     // number
     Num,
 
-    // pipe symbol (|)
-    Pipe,
-
+    // Parameter: if the first char is '-' then  transform state to Param.
+    Param,
     // short parameter (-short)
     ShortParam,
     // long parameter (--long)
@@ -41,11 +37,8 @@ pub struct Lexer {
     // Command what user input.
     command: Vec<char>,
 
-    // The index of the character currently being read by the lexer.
-    cur_index: RefCell<usize>,
-
     // Start index of token in command.
-    start_index: usize,
+    start_index: RefCell<usize>,
 
     // Store the tokens that are parsed.
     tokens: RefCell<Vec<Token>>,
@@ -59,8 +52,7 @@ impl Lexer {
     pub fn new(command: String) -> Lexer {
         let mut l = Lexer {
             command: command.chars().collect(),
-            cur_index: RefCell::new(0),
-            start_index: 0,
+            start_index: RefCell::new(0),
             tokens: RefCell::new(Vec::new()),
             cur_state: RefCell::new(State::Start),
         };
@@ -72,56 +64,105 @@ impl Lexer {
 
     // Analyze the command and generate tokens.
     fn analyze_command(&mut self) {
+        // Iterate the command char by char.
         for (index, c) in self.command.iter().enumerate() {
             let state = self.cur_state.borrow().clone();
             match state {
                 State::Start => self.trans_state(index, c),
+
                 State::LsCommandState1 => {
                     if *c == 's' {
-                        *(self.cur_state.borrow_mut()) = State::LsCommandState2;
+                        *(self.cur_state.borrow_mut()) = State::LsCommandState;
                     } else {
-                        *(self.cur_state.borrow_mut()) = State::End;
+                        self.trans_state(index, c);
                     }
-                },
-                State::LsCommandState2 => {
-                    self.store_token(State::LsCommandState2, index);
-                    *self.cur_index.borrow_mut() = index;
-                    *(self.cur_state.borrow_mut()) = State::Start;
-                },
+                }
+
+                State::LsCommandState => {
+                    self.store_token(state, index);
+                }
+
                 State::CdCommandState1 => {}
-                State::CdCommandState2 => {}
+
+                State::CdCommandState => {}
+
                 State::Num => {}
-                State::Pipe => {}
-                State::ShortParam => {}
+
+                State::Param => {
+                    if c.is_alphabetic() {
+                        *(self.cur_state.borrow_mut()) = State::ShortParam;
+                    } else if *c == '-' {
+                        *(self.cur_state.borrow_mut()) = State::LongParam;
+                    }
+                }
+
+                State::ShortParam => {
+                    self.store_token(state, index);
+                }
+
                 State::LongParam => {}
+
                 State::Ident => {}
+
                 State::End => {}
             }
         }
+
+        // If the lexer's state is not end, we need to store the last token.
+        let state = self.cur_state.borrow().clone();
+        self.store_token(state, self.command.len());
     }
 
     // Store the token in tokens.
-    fn store_token(&self, state: State, end_index: usize) {
+    fn store_token(&self, state: State, cur_index: usize) {
         // Match the state to get the token type.
         let token_type = match state {
-            State::LsCommandState2 => TokenType::Ls,
-            State::CdCommandState2 => TokenType::Cd,
+            State::LsCommandState => TokenType::Ls,
+            State::CdCommandState => TokenType::Cd,
+            State::ShortParam => TokenType::ShortParam,
+            State::LongParam => TokenType::LongParam,
             _ => todo!(),
         };
 
+        let mut state = self.cur_state.borrow_mut();
+        let mut start_index = self.start_index.borrow_mut();
+
         // Get the literal of token from char vector.
-        let literal = self.command[self.start_index..=end_index].iter().collect();
+        let literal = self.command[*start_index..cur_index].iter().collect();
 
         self.tokens
             .borrow_mut()
             .push(Token::new(token_type, literal));
+
+        // Move start index to end index for ready to read next token.
+        if cur_index < self.command.len() {
+            *start_index = self.move_index_to_next_non_blank_char(cur_index);
+        } else {
+            *state = State::End;
+            return;
+        }
+        // Reset lexer state
+        *state = State::Start;
+    }
+
+    fn move_index_to_next_non_blank_char(&self, cur_index: usize) -> usize {
+        let mut cur_index = cur_index;
+
+        if self.command[cur_index].is_whitespace() && cur_index < self.command.len() {
+            cur_index += 1;
+        }
+
+        cur_index
     }
 
     // Transform lexer state by the current char.
     fn trans_state(&self, end_index: usize, c: &char) {
         // Get state and cur_index, and update them by the current char.
         let mut state = self.cur_state.borrow_mut();
-        let mut cur_index = self.cur_index.borrow_mut();
+
+        if *state == State::End {
+            return;
+        }
 
         // If the current char is the last char of the command, and the current state is Start,
         // it means that the command is empty, so we don't need to do anything.
@@ -130,20 +171,13 @@ impl Lexer {
             return;
         }
 
-
         // We need to check the state of lexer at now.
-        if c.is_alphabetic() {
+        if c.is_alphanumeric() {
             if *state == State::Start {
                 *state = self.select_state(c);
             }
-        } else if c.is_numeric() {
-            if *state == State::Start {
-                *state = self.select_state(c);
-            }
-        } else if c.is_whitespace() {
-            *cur_index += 1;
         } else {
-            *state = State::End;
+            *state = self.select_state(c);
         }
     }
 
@@ -152,11 +186,12 @@ impl Lexer {
         match c {
             ' ' => State::Start,
             'l' => State::LsCommandState1,
-            's' => State::LsCommandState2,
+            's' => State::LsCommandState,
             'c' => State::CdCommandState1,
-            'd' => State::CdCommandState2,
+            'd' => State::CdCommandState,
             '0'..='9' => State::Num,
-            _ => State::End,
+            '-' => State::Param,
+            _ => State::Ident,
         }
     }
 }

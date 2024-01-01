@@ -5,6 +5,10 @@ pub enum TokenType {
     Ls, // ls
     Cd, // cd
 
+    // Param
+    ShortParam,
+    LongParam,
+
     Num, // integer number: 1, 2, 3, etc. Or float number: 1.0, 2.0, 3.0, etc.
 
     Ident, // Identity
