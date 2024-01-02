@@ -42,27 +42,37 @@ mod test {
             "cd".to_string(),
         );
 
-        let ls_token = Token::new(
+        let cd_token = Token::new(
             TokenType::Cd,
             "cd".to_string(),
         );
 
-        assert_eq!(ls_token.token_type, l.tokens.borrow()[0].token_type);
-        assert_eq!(ls_token.literal, l.tokens.borrow()[0].literal);
+        assert_eq!(cd_token.token_type, l.tokens.borrow()[0].token_type);
+        assert_eq!(cd_token.literal, l.tokens.borrow()[0].literal);
     }
 
     #[test]
     fn test_parse_long_param() {
         let l = Lexer::new(
-            "--longparam".to_string(),
+            "  ls -l --lp  ".to_string(),
+        );
+
+        let ls_token = Token::new(
+            TokenType::Ls,
+            "ls".to_string(),
         );
 
         let long_param_token = Token::new(
             TokenType::LongParam,
-            "--longparam".to_string(),
+            "--lp".to_string(),
         );
 
-        assert_eq!(long_param_token.token_type, l.tokens.borrow()[0].token_type);
-        assert_eq!(long_param_token.literal, l.tokens.borrow()[0].literal);
+        println!("{:#?}", l);
+
+        assert_eq!(ls_token.token_type, l.tokens.borrow()[0].token_type);
+        assert_eq!(ls_token.literal, l.tokens.borrow()[0].literal);
+
+        assert_eq!(long_param_token.token_type, l.tokens.borrow()[2].token_type);
+        assert_eq!(long_param_token.literal, l.tokens.borrow()[2].literal);
     }
 }
