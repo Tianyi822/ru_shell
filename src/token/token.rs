@@ -12,7 +12,7 @@ pub enum TokenType {
 
     Num, // integer number: 1, 2, 3, etc. Or float number: 1.0, 2.0, 3.0, etc.
 
-    Ident, // Identity
+    Literal, // Literal
 
     // Single Symbols
     Pipe,         // |
@@ -55,6 +55,7 @@ pub struct Token {
 }
 
 impl Token {
+    #[allow(dead_code)]
     pub fn new(token_type: TokenType, literal: String) -> Token {
         Token {
             token_type,
