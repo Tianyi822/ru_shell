@@ -30,6 +30,8 @@ enum State {
 
     // This state means that the lexer has reached the end of the command.
     End,
+
+    WhiteSpace,
 }
 
 // This lexer is designed based on the concept of FA (Finite Automata).
@@ -118,7 +120,7 @@ impl Lexer {
                     }
                 }
 
-                State::LongParam =>{
+                State::LongParam => {
                     if !c.is_alphanumeric() {
                         self.store_token(state, index);
                     }
@@ -127,13 +129,21 @@ impl Lexer {
                 // =============== cd command ===============
                 State::Literal => {}
 
+                // =============== white space ===============
+                State::WhiteSpace => {
+                    self.trans_state(index, c);
+                }
+
+                // =============== end ===============
                 State::End => {}
             }
         }
 
         // If the lexer's state is not end, we need to store the last token.
-        let state = self.cur_state.borrow().clone();
-        self.store_token(state, self.command.len());
+        if self.cur_state.borrow().clone() != State::End {
+            let state = self.cur_state.borrow().clone();
+            self.store_token(state, self.command.len());
+        }
     }
 
     // Store the token in tokens.
@@ -150,8 +160,12 @@ impl Lexer {
         let mut state = self.cur_state.borrow_mut();
         let mut start_index = self.start_index.borrow_mut();
 
+        // Move start index to end index for ready to read next token.
+        *start_index = self.move_index_to_next_non_blank_char(*start_index);
+
         // Get the literal of token from char vector.
         let literal = self.command[*start_index..cur_index].iter().collect();
+        *start_index = cur_index;
 
         self.tokens
             .borrow_mut()
@@ -159,24 +173,28 @@ impl Lexer {
 
         // Judge whether the state should be reset or be end.
         if cur_index < self.command.len() {
-            // Move start index to end index for ready to read next token.
-            *start_index = self.move_index_to_next_non_blank_char(cur_index);
             // Reset lexer state
             *state = State::Start;
         } else {
             *start_index = self.command.len() - 1;
             *state = State::End;
         }
+
+         // If the index is equal to the length of the command, it means that the command is empty.
+         if *start_index + 1 == self.command.len() {
+            *state = State::End;
+        }
     }
 
     fn move_index_to_next_non_blank_char(&self, cur_index: usize) -> usize {
-        let mut cur_index = cur_index;
+        let mut index = cur_index;
 
-        if self.command[cur_index].is_whitespace() && cur_index < self.command.len() {
-            cur_index += 1;
+        // Move index to next non blank char.
+        while index < self.command.len() && self.command[index].is_whitespace() {
+            index += 1;
         }
 
-        cur_index
+        index
     }
 
     // Transform lexer state by the current char.
@@ -197,9 +215,11 @@ impl Lexer {
 
         // We need to check the state of lexer at now.
         if c.is_alphanumeric() {
-            if *state == State::Start {
+            if *state == State::Start || *state == State::WhiteSpace {
                 *state = self.select_state(c);
             }
+        } else if c.is_whitespace() {
+            *state = State::WhiteSpace;
         } else {
             *state = self.select_state(c);
         }
