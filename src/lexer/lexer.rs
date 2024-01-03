@@ -29,9 +29,11 @@ enum State {
     LongParam,
 
     // Single Symbols
-    PipeState,      // |
-    CommaState,     // ,
-    SemicolonState, // ;
+    PipeState,        // |
+    CommaState,       // ,
+    SemicolonState,   // ;
+    GreaterThanState, // >
+    LessThanState,    // <
 
     // This state means that the lexer has reached the end of the command.
     End,
@@ -142,7 +144,11 @@ impl Lexer {
                 // =============== end ===============
                 State::End => {}
 
-                State::CommaState | State::PipeState | State::SemicolonState => {
+                State::CommaState
+                | State::PipeState
+                | State::SemicolonState
+                | State::GreaterThanState
+                | State::LessThanState => {
                     self.store_token_and_trans_state(index);
                     self.trans_state(c);
                 }
@@ -178,6 +184,8 @@ impl Lexer {
                 State::PipeState => TokenType::Pipe,
                 State::CommaState => TokenType::Comma,
                 State::SemicolonState => TokenType::Semicolon,
+                State::GreaterThanState => TokenType::GreaterThan,
+                State::LessThanState => TokenType::LessThan,
                 _ => todo!(),
             };
 
@@ -244,6 +252,8 @@ impl Lexer {
             '|' => State::PipeState,
             ',' => State::CommaState,
             ';' => State::SemicolonState,
+            '>' => State::GreaterThanState,
+            '<' => State::LessThanState,
             _ => State::Literal,
         }
     }

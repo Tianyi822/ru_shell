@@ -79,7 +79,7 @@ mod test {
     #[test]
     fn test_single_symbols() {
         let l = Lexer::new(
-            ",|;".to_string(),
+            ",|;><".to_string(),
         );
 
         let comma_token = Token::new(
@@ -97,6 +97,16 @@ mod test {
             ";".to_string(),
         );
 
+        let greater_than_token = Token::new(
+            TokenType::GreaterThan,
+            ">".to_string(),
+        );
+
+        let less_than_token = Token::new(
+            TokenType::LessThan,
+            "<".to_string(),
+        );
+
         // println!("{:#?}", l);
 
         assert_eq!(comma_token.token_type, l.tokens.borrow()[0].token_type);
@@ -107,5 +117,11 @@ mod test {
 
         assert_eq!(semicolon_token.token_type, l.tokens.borrow()[2].token_type);
         assert_eq!(semicolon_token.literal, l.tokens.borrow()[2].literal);
+
+        assert_eq!(greater_than_token.token_type, l.tokens.borrow()[3].token_type);
+        assert_eq!(greater_than_token.literal, l.tokens.borrow()[3].literal);
+
+        assert_eq!(less_than_token.token_type, l.tokens.borrow()[4].token_type);
+        assert_eq!(less_than_token.literal, l.tokens.borrow()[4].literal);
     }
 }
