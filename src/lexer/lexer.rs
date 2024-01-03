@@ -28,6 +28,11 @@ enum State {
     LongParam1,
     LongParam,
 
+    // Single Symbols
+    PipeState,      // |
+    CommaState,     // ,
+    SemicolonState, // ;
+
     // This state means that the lexer has reached the end of the command.
     End,
 
@@ -71,19 +76,19 @@ impl Lexer {
         for (index, c) in self.command.iter().enumerate() {
             let state = self.cur_state.borrow().clone();
             match state {
-                State::Start => self.trans_state(index, c),
+                State::Start => self.trans_state(c),
 
                 // =============== ls command ===============
                 State::LsCommandState1 => {
                     if *c == 's' {
                         *(self.cur_state.borrow_mut()) = State::LsCommandState;
                     } else {
-                        self.trans_state(index, c);
+                        self.trans_state(c);
                     }
                 }
 
                 State::LsCommandState => {
-                    self.store_token(state, index);
+                    self.store_token_and_trans_state(index);
                 }
 
                 // =============== cd command ===============
@@ -91,12 +96,12 @@ impl Lexer {
                     if *c == 'd' {
                         *(self.cur_state.borrow_mut()) = State::CdCommandState;
                     } else {
-                        self.trans_state(index, c);
+                        self.trans_state(c);
                     }
                 }
 
                 State::CdCommandState => {
-                    self.store_token(state, index);
+                    self.store_token_and_trans_state(index);
                 }
 
                 State::Num => {}
@@ -111,7 +116,7 @@ impl Lexer {
                 }
 
                 State::ShortParam => {
-                    self.store_token(state, index);
+                    self.store_token_and_trans_state(index);
                 }
 
                 State::LongParam1 => {
@@ -122,7 +127,7 @@ impl Lexer {
 
                 State::LongParam => {
                     if !c.is_alphanumeric() {
-                        self.store_token(state, index);
+                        self.store_token_and_trans_state(index);
                     }
                 }
 
@@ -131,32 +136,28 @@ impl Lexer {
 
                 // =============== white space ===============
                 State::WhiteSpace => {
-                    self.trans_state(index, c);
+                    self.trans_state(c);
                 }
 
                 // =============== end ===============
                 State::End => {}
+
+                State::CommaState | State::PipeState | State::SemicolonState => {
+                    self.store_token_and_trans_state(index);
+                    self.trans_state(c);
+                }
             }
         }
 
         // If the lexer's state is not end, we need to store the last token.
-        if self.cur_state.borrow().clone() != State::End {
-            let state = self.cur_state.borrow().clone();
-            self.store_token(state, self.command.len());
+        let state = self.cur_state.borrow().clone();
+        if state != State::End {
+            self.store_token_and_trans_state(self.command.len());
         }
     }
 
-    // Store the token in tokens.
-    fn store_token(&self, state: State, cur_index: usize) {
-        // Match the state to get the token type.
-        let token_type = match state {
-            State::LsCommandState => TokenType::Ls,
-            State::CdCommandState => TokenType::Cd,
-            State::ShortParam => TokenType::ShortParam,
-            State::LongParam => TokenType::LongParam,
-            _ => todo!(),
-        };
-
+    // Store token and transform state.
+    fn store_token_and_trans_state(&self, cur_index: usize) {
         let mut state = self.cur_state.borrow_mut();
         let mut start_index = self.start_index.borrow_mut();
 
@@ -167,21 +168,30 @@ impl Lexer {
         let literal = self.command[*start_index..cur_index].iter().collect();
         *start_index = cur_index;
 
-        self.tokens
-            .borrow_mut()
-            .push(Token::new(token_type, literal));
+        if !(*state == State::WhiteSpace) {
+            // Match the state to get the token type.
+            let token_type = match *state {
+                State::LsCommandState => TokenType::Ls,
+                State::CdCommandState => TokenType::Cd,
+                State::ShortParam => TokenType::ShortParam,
+                State::LongParam => TokenType::LongParam,
+                State::PipeState => TokenType::Pipe,
+                State::CommaState => TokenType::Comma,
+                State::SemicolonState => TokenType::Semicolon,
+                _ => todo!(),
+            };
+
+            self.tokens
+                .borrow_mut()
+                .push(Token::new(token_type, literal));
+        }
 
         // Judge whether the state should be reset or be end.
-        if cur_index < self.command.len() {
+        if *start_index < self.command.len() {
             // Reset lexer state
             *state = State::Start;
         } else {
             *start_index = self.command.len() - 1;
-            *state = State::End;
-        }
-
-         // If the index is equal to the length of the command, it means that the command is empty.
-         if *start_index + 1 == self.command.len() {
             *state = State::End;
         }
     }
@@ -194,22 +204,21 @@ impl Lexer {
             index += 1;
         }
 
+        // If index is out of range, we need to set it to the end of command.
+        // It means from cur_index to the end of command are all blank chars.
+        if index >= self.command.len() {
+            index = self.command.len();
+        }
+
         index
     }
 
     // Transform lexer state by the current char.
-    fn trans_state(&self, end_index: usize, c: &char) {
+    fn trans_state(&self, c: &char) {
         // Get state and cur_index, and update them by the current char.
         let mut state = self.cur_state.borrow_mut();
 
         if *state == State::End {
-            return;
-        }
-
-        // If the current char is the last char of the command, and the current state is Start,
-        // it means that the command is empty, so we don't need to do anything.
-        if (end_index == self.command.len() - 1) && (*state == State::Start) {
-            *(state) = State::End;
             return;
         }
 
@@ -232,6 +241,9 @@ impl Lexer {
             'c' => State::CdCommandState1,
             '0'..='9' => State::Num,
             '-' => State::Param,
+            '|' => State::PipeState,
+            ',' => State::CommaState,
+            ';' => State::SemicolonState,
             _ => State::Literal,
         }
     }

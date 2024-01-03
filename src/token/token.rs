@@ -24,7 +24,7 @@ pub enum TokenType {
     Slash,        // /
     Star,         // *
     Assignment,   // =
-    SEMICOLON,    // ;
+    Semicolon,    // ;
     And,          // &
     GreaterThan,  // >
     LessThan,     // <

@@ -32,7 +32,7 @@ mod test {
             "ls -l -h -t".to_string(),
         );
         
-        println!("{:#?}", l);
+        // println!("{:#?}", l);
         assert_eq!(4, l.tokens.borrow().len());
     }
 
@@ -67,12 +67,45 @@ mod test {
             "--lp".to_string(),
         );
 
-        println!("{:#?}", l);
+        // println!("{:#?}", l);
 
         assert_eq!(ls_token.token_type, l.tokens.borrow()[0].token_type);
         assert_eq!(ls_token.literal, l.tokens.borrow()[0].literal);
 
         assert_eq!(long_param_token.token_type, l.tokens.borrow()[2].token_type);
         assert_eq!(long_param_token.literal, l.tokens.borrow()[2].literal);
+    }
+
+    #[test]
+    fn test_single_symbols() {
+        let l = Lexer::new(
+            ",|;".to_string(),
+        );
+
+        let comma_token = Token::new(
+            TokenType::Comma,
+            ",".to_string(),
+        );
+
+        let pipe_token = Token::new(
+            TokenType::Pipe,
+            "|".to_string(),
+        );
+
+        let semicolon_token = Token::new(
+            TokenType::Semicolon,
+            ";".to_string(),
+        );
+
+        // println!("{:#?}", l);
+
+        assert_eq!(comma_token.token_type, l.tokens.borrow()[0].token_type);
+        assert_eq!(comma_token.literal, l.tokens.borrow()[0].literal);
+
+        assert_eq!(pipe_token.token_type, l.tokens.borrow()[1].token_type);
+        assert_eq!(pipe_token.literal, l.tokens.borrow()[1].literal);
+
+        assert_eq!(semicolon_token.token_type, l.tokens.borrow()[2].token_type);
+        assert_eq!(semicolon_token.literal, l.tokens.borrow()[2].literal);
     }
 }
