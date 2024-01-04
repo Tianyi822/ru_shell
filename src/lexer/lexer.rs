@@ -18,15 +18,15 @@ enum State {
     CdCommandState,
 
     // number
-    Num,
+    NumState,
 
     // Parameter: if the first char is '-' then  transform state to Param.
-    Param,
+    ParamState,
     // short parameter (-short)
-    ShortParam,
+    ShortParamState,
     // long parameter (--long)
-    LongParam1,
-    LongParam,
+    LongParamState1,
+    LongParamState,
 
     // Single Symbols
     PipeState,        // |
@@ -109,28 +109,28 @@ impl Lexer {
                     self.store_token_and_trans_state(index);
                 }
 
-                State::Num => {}
+                State::NumState => {}
 
                 // =============== parameter ===============
-                State::Param => {
+                State::ParamState => {
                     if c.is_alphabetic() {
-                        *(self.cur_state.borrow_mut()) = State::ShortParam;
+                        *(self.cur_state.borrow_mut()) = State::ShortParamState;
                     } else if *c == '-' {
-                        *(self.cur_state.borrow_mut()) = State::LongParam1;
+                        *(self.cur_state.borrow_mut()) = State::LongParamState1;
                     }
                 }
 
-                State::ShortParam => {
+                State::ShortParamState => {
                     self.store_token_and_trans_state(index);
                 }
 
-                State::LongParam1 => {
+                State::LongParamState1 => {
                     if c.is_alphabetic() {
-                        *(self.cur_state.borrow_mut()) = State::LongParam;
+                        *(self.cur_state.borrow_mut()) = State::LongParamState;
                     }
                 }
 
-                State::LongParam => {
+                State::LongParamState => {
                     if !c.is_alphanumeric() {
                         self.store_token_and_trans_state(index);
                     }
@@ -185,8 +185,8 @@ impl Lexer {
             let token_type = match *state {
                 State::LsCommandState => TokenType::Ls,
                 State::CdCommandState => TokenType::Cd,
-                State::ShortParam => TokenType::ShortParam,
-                State::LongParam => TokenType::LongParam,
+                State::ShortParamState => TokenType::ShortParam,
+                State::LongParamState => TokenType::LongParam,
                 State::PipeState => TokenType::Pipe,
                 State::CommaState => TokenType::Comma,
                 State::SemicolonState => TokenType::Semicolon,
@@ -256,8 +256,8 @@ impl Lexer {
         match c {
             'l' => State::LsCommandState1,
             'c' => State::CdCommandState1,
-            '0'..='9' => State::Num,
-            '-' => State::Param,
+            '0'..='9' => State::NumState,
+            '-' => State::ParamState,
             '|' => State::PipeState,
             ',' => State::CommaState,
             ';' => State::SemicolonState,
