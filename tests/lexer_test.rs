@@ -148,4 +148,60 @@ mod test {
         assert_eq!(assignment_token.token_type, l.tokens.borrow()[7].token_type);
         assert_eq!(assignment_token.literal, l.tokens.borrow()[7].literal);
     }
+
+    #[test]
+    fn test_num_tokens() {
+        let l = Lexer::new(
+            "123 456 123_456 12_3456 1_000_000 1_0000_0000_0000".to_string(),
+        );
+
+        // println!("{:#?}", l);
+
+        let token_123 = Token::new(
+            TokenType::Num,
+            "123".to_string(),
+        );
+        assert_eq!(token_123.token_type, l.tokens.borrow()[0].token_type);
+        assert_eq!(token_123.literal, l.tokens.borrow()[0].literal);
+
+
+        let token_456 = Token::new(
+            TokenType::Num,
+            "456".to_string(),
+        );
+        assert_eq!(token_456.token_type, l.tokens.borrow()[1].token_type);
+        assert_eq!(token_456.literal, l.tokens.borrow()[1].literal);
+
+
+        let token_123_456 = Token::new(
+            TokenType::Num,
+            "123_456".to_string(),
+        );
+        assert_eq!(token_123_456.token_type, l.tokens.borrow()[2].token_type);
+        assert_eq!(token_123_456.literal, l.tokens.borrow()[2].literal);
+
+
+        let token_12_3456 = Token::new(
+            TokenType::Num,
+            "12_3456".to_string(),
+        );
+        assert_eq!(token_12_3456.token_type, l.tokens.borrow()[3].token_type);
+        assert_eq!(token_12_3456.literal, l.tokens.borrow()[3].literal);
+
+
+        let token_1_000_000 = Token::new(
+            TokenType::Num,
+            "1_000_000".to_string(),
+        );
+        assert_eq!(token_1_000_000.token_type, l.tokens.borrow()[4].token_type);
+        assert_eq!(token_1_000_000.literal, l.tokens.borrow()[4].literal);
+
+        
+        let token_1_0000_0000_0000 = Token::new(
+            TokenType::Num,
+            "1_0000_0000_0000".to_string(),
+        );
+        assert_eq!(token_1_0000_0000_0000.token_type, l.tokens.borrow()[5].token_type);
+        assert_eq!(token_1_0000_0000_0000.literal, l.tokens.borrow()[5].literal);
+    }
 }

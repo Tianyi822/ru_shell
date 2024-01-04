@@ -85,7 +85,7 @@ impl Lexer {
 
                 // =============== ls command ===============
                 State::LsCommandState1 => {
-                    if *c == 's' {
+                    if c.eq(&'s') {
                         *(self.cur_state.borrow_mut()) = State::LsCommandState;
                     } else {
                         self.trans_state(c);
@@ -98,7 +98,7 @@ impl Lexer {
 
                 // =============== cd command ===============
                 State::CdCommandState1 => {
-                    if *c == 'd' {
+                    if c.eq(&'d') {
                         *(self.cur_state.borrow_mut()) = State::CdCommandState;
                     } else {
                         self.trans_state(c);
@@ -109,13 +109,22 @@ impl Lexer {
                     self.store_token_and_trans_state(index);
                 }
 
-                State::NumState => {}
+                // =============== number ===============
+                State::NumState => {
+                    if c.is_numeric() {
+                        *(self.cur_state.borrow_mut()) = State::NumState;
+                    } else if state == State::NumState && c.eq(&'_') {
+                        *(self.cur_state.borrow_mut()) = State::NumState;
+                    } else {
+                        self.store_token_and_trans_state(index);
+                    }
+                }
 
                 // =============== parameter ===============
                 State::ParamState => {
                     if c.is_alphabetic() {
                         *(self.cur_state.borrow_mut()) = State::ShortParamState;
-                    } else if *c == '-' {
+                    } else if c.eq(&'-'){
                         *(self.cur_state.borrow_mut()) = State::LongParamState1;
                     }
                 }
@@ -124,6 +133,8 @@ impl Lexer {
                     self.store_token_and_trans_state(index);
                 }
 
+                // The reason of long parameter is divided into two states is that
+                // the long parameter requires at least two letters.
                 State::LongParamState1 => {
                     if c.is_alphabetic() {
                         *(self.cur_state.borrow_mut()) = State::LongParamState;
@@ -195,6 +206,7 @@ impl Lexer {
                 State::DotState => TokenType::Dot,
                 State::ColonState => TokenType::Colon,
                 State::AssignmentState => TokenType::Assignment,
+                State::NumState => TokenType::Num,
                 _ => todo!(),
             };
 
@@ -266,6 +278,10 @@ impl Lexer {
             '.' => State::DotState,
             ':' => State::ColonState,
             '=' => State::AssignmentState,
+            '_' => {
+                // underline means the state is not need to change.
+                return self.cur_state.borrow().clone();
+            }
             _ => State::Literal,
         }
     }
