@@ -79,7 +79,7 @@ mod test {
     #[test]
     fn test_single_symbols() {
         let l = Lexer::new(
-            ",|;><".to_string(),
+            "   ,| ;  >   < .:= ".to_string(),
         );
 
         let comma_token = Token::new(
@@ -107,6 +107,21 @@ mod test {
             "<".to_string(),
         );
 
+        let dot_token = Token::new(
+            TokenType::Dot,
+            ".".to_string(),
+        );
+
+        let colon_token = Token::new(
+            TokenType::Colon,
+            ":".to_string(),
+        );
+
+        let assignment_token = Token::new(
+            TokenType::Assignment,
+            "=".to_string(),
+        );
+
         // println!("{:#?}", l);
 
         assert_eq!(comma_token.token_type, l.tokens.borrow()[0].token_type);
@@ -123,5 +138,14 @@ mod test {
 
         assert_eq!(less_than_token.token_type, l.tokens.borrow()[4].token_type);
         assert_eq!(less_than_token.literal, l.tokens.borrow()[4].literal);
+
+        assert_eq!(dot_token.token_type, l.tokens.borrow()[5].token_type);
+        assert_eq!(dot_token.literal, l.tokens.borrow()[5].literal);
+
+        assert_eq!(colon_token.token_type, l.tokens.borrow()[6].token_type);
+        assert_eq!(colon_token.literal, l.tokens.borrow()[6].literal);
+
+        assert_eq!(assignment_token.token_type, l.tokens.borrow()[7].token_type);
+        assert_eq!(assignment_token.literal, l.tokens.borrow()[7].literal);
     }
 }

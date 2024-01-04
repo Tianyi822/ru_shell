@@ -31,6 +31,9 @@ enum State {
     // Single Symbols
     PipeState,        // |
     CommaState,       // ,
+    DotState,         // .
+    ColonState,       // :
+    AssignmentState,  // =
     SemicolonState,   // ;
     GreaterThanState, // >
     LessThanState,    // <
@@ -148,7 +151,10 @@ impl Lexer {
                 | State::PipeState
                 | State::SemicolonState
                 | State::GreaterThanState
-                | State::LessThanState => {
+                | State::LessThanState
+                | State::DotState
+                | State::ColonState
+                | State::AssignmentState => {
                     self.store_token_and_trans_state(index);
                     self.trans_state(c);
                 }
@@ -186,6 +192,9 @@ impl Lexer {
                 State::SemicolonState => TokenType::Semicolon,
                 State::GreaterThanState => TokenType::GreaterThan,
                 State::LessThanState => TokenType::LessThan,
+                State::DotState => TokenType::Dot,
+                State::ColonState => TokenType::Colon,
+                State::AssignmentState => TokenType::Assignment,
                 _ => todo!(),
             };
 
@@ -254,6 +263,9 @@ impl Lexer {
             ';' => State::SemicolonState,
             '>' => State::GreaterThanState,
             '<' => State::LessThanState,
+            '.' => State::DotState,
+            ':' => State::ColonState,
+            '=' => State::AssignmentState,
             _ => State::Literal,
         }
     }
