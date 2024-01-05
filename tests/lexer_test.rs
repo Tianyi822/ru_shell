@@ -79,7 +79,7 @@ mod test {
     #[test]
     fn test_single_symbols() {
         let l = Lexer::new(
-            "   ,| ;  >   < .:= /*".to_string(),
+            "   ,| ;  >   < .:= /* & && &&& ||" .to_string(),
         );
 
         // println!("{:#?}", l);
@@ -153,6 +153,41 @@ mod test {
         );
         assert_eq!(star_token.token_type, l.tokens.borrow()[9].token_type);
         assert_eq!(star_token.literal, l.tokens.borrow()[9].literal);
+
+        let background_token = Token::new(
+            TokenType::Background,
+            "&".to_string(),
+        );
+        assert_eq!(background_token.token_type, l.tokens.borrow()[10].token_type);
+        assert_eq!(background_token.literal, l.tokens.borrow()[10].literal);
+
+        let and_token = Token::new(
+            TokenType::And,
+            "&&".to_string(),
+        );
+        assert_eq!(and_token.token_type, l.tokens.borrow()[11].token_type);
+        assert_eq!(and_token.literal, l.tokens.borrow()[11].literal);
+
+        let and_token_2 = Token::new(
+            TokenType::And,
+            "&&".to_string(),
+        );
+        assert_eq!(and_token_2.token_type, l.tokens.borrow()[12].token_type);
+        assert_eq!(and_token_2.literal, l.tokens.borrow()[12].literal);
+
+        let background_token_2 = Token::new(
+            TokenType::Background,
+            "&".to_string(),
+        );
+        assert_eq!(background_token_2.token_type, l.tokens.borrow()[13].token_type);
+        assert_eq!(background_token_2.literal, l.tokens.borrow()[13].literal);
+
+        let or_token_3 = Token::new(
+            TokenType::Or,
+            "||".to_string(),
+        );
+        assert_eq!(or_token_3.token_type, l.tokens.borrow()[14].token_type);
+        assert_eq!(or_token_3.literal, l.tokens.borrow()[14].literal);
     }
 
     #[test]
