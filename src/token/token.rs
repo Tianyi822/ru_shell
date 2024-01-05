@@ -25,7 +25,7 @@ pub enum TokenType {
     Star,         // *
     Assignment,   // =
     Semicolon,    // ;
-    And,          // &
+    Background,   // &
     GreaterThan,  // >
     LessThan,     // <
     Not,          // !
@@ -42,8 +42,8 @@ pub enum TokenType {
     LessThanOrEqualTo,    // <=
     EqualTo,              // ==
     NotEqualTo,           // !=
-    AND,                  // &&
-    OR,                   // ||
+    And,                  // &&
+    Or,                   // ||
 }
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
