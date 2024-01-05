@@ -79,74 +79,80 @@ mod test {
     #[test]
     fn test_single_symbols() {
         let l = Lexer::new(
-            "   ,| ;  >   < .:= ".to_string(),
+            "   ,| ;  >   < .:= /*".to_string(),
         );
+
+        // println!("{:#?}", l);
 
         let comma_token = Token::new(
             TokenType::Comma,
             ",".to_string(),
         );
+        assert_eq!(comma_token.token_type, l.tokens.borrow()[0].token_type);
+        assert_eq!(comma_token.literal, l.tokens.borrow()[0].literal);
 
         let pipe_token = Token::new(
             TokenType::Pipe,
             "|".to_string(),
         );
+        assert_eq!(pipe_token.token_type, l.tokens.borrow()[1].token_type);
+        assert_eq!(pipe_token.literal, l.tokens.borrow()[1].literal);
 
         let semicolon_token = Token::new(
             TokenType::Semicolon,
             ";".to_string(),
         );
+        assert_eq!(semicolon_token.token_type, l.tokens.borrow()[2].token_type);
+        assert_eq!(semicolon_token.literal, l.tokens.borrow()[2].literal);
 
         let greater_than_token = Token::new(
             TokenType::GreaterThan,
             ">".to_string(),
         );
+        assert_eq!(greater_than_token.token_type, l.tokens.borrow()[3].token_type);
+        assert_eq!(greater_than_token.literal, l.tokens.borrow()[3].literal);
 
         let less_than_token = Token::new(
             TokenType::LessThan,
             "<".to_string(),
         );
+        assert_eq!(less_than_token.token_type, l.tokens.borrow()[4].token_type);
+        assert_eq!(less_than_token.literal, l.tokens.borrow()[4].literal);
 
         let dot_token = Token::new(
             TokenType::Dot,
             ".".to_string(),
         );
+        assert_eq!(dot_token.token_type, l.tokens.borrow()[5].token_type);
+        assert_eq!(dot_token.literal, l.tokens.borrow()[5].literal);
 
         let colon_token = Token::new(
             TokenType::Colon,
             ":".to_string(),
         );
+        assert_eq!(colon_token.token_type, l.tokens.borrow()[6].token_type);
+        assert_eq!(colon_token.literal, l.tokens.borrow()[6].literal);
 
         let assignment_token = Token::new(
             TokenType::Assignment,
             "=".to_string(),
         );
-
-        // println!("{:#?}", l);
-
-        assert_eq!(comma_token.token_type, l.tokens.borrow()[0].token_type);
-        assert_eq!(comma_token.literal, l.tokens.borrow()[0].literal);
-
-        assert_eq!(pipe_token.token_type, l.tokens.borrow()[1].token_type);
-        assert_eq!(pipe_token.literal, l.tokens.borrow()[1].literal);
-
-        assert_eq!(semicolon_token.token_type, l.tokens.borrow()[2].token_type);
-        assert_eq!(semicolon_token.literal, l.tokens.borrow()[2].literal);
-
-        assert_eq!(greater_than_token.token_type, l.tokens.borrow()[3].token_type);
-        assert_eq!(greater_than_token.literal, l.tokens.borrow()[3].literal);
-
-        assert_eq!(less_than_token.token_type, l.tokens.borrow()[4].token_type);
-        assert_eq!(less_than_token.literal, l.tokens.borrow()[4].literal);
-
-        assert_eq!(dot_token.token_type, l.tokens.borrow()[5].token_type);
-        assert_eq!(dot_token.literal, l.tokens.borrow()[5].literal);
-
-        assert_eq!(colon_token.token_type, l.tokens.borrow()[6].token_type);
-        assert_eq!(colon_token.literal, l.tokens.borrow()[6].literal);
-
         assert_eq!(assignment_token.token_type, l.tokens.borrow()[7].token_type);
         assert_eq!(assignment_token.literal, l.tokens.borrow()[7].literal);
+
+        let slash_token = Token::new(
+            TokenType::Slash,
+            "/".to_string(),
+        );
+        assert_eq!(slash_token.token_type, l.tokens.borrow()[8].token_type);
+        assert_eq!(slash_token.literal, l.tokens.borrow()[8].literal);
+
+        let star_token = Token::new(
+            TokenType::Star,
+            "*".to_string(),
+        );
+        assert_eq!(star_token.token_type, l.tokens.borrow()[9].token_type);
+        assert_eq!(star_token.literal, l.tokens.borrow()[9].literal);
     }
 
     #[test]

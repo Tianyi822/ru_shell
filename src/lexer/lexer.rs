@@ -37,6 +37,8 @@ enum State {
     SemicolonState,   // ;
     GreaterThanState, // >
     LessThanState,    // <
+    SlashState,       // /
+    StarState,        // *
 
     // This state means that the lexer has reached the end of the command.
     End,
@@ -124,7 +126,7 @@ impl Lexer {
                 State::ParamState => {
                     if c.is_alphabetic() {
                         *(self.cur_state.borrow_mut()) = State::ShortParamState;
-                    } else if c.eq(&'-'){
+                    } else if c.eq(&'-') {
                         *(self.cur_state.borrow_mut()) = State::LongParamState1;
                     }
                 }
@@ -148,7 +150,11 @@ impl Lexer {
                 }
 
                 // =============== cd command ===============
-                State::Literal => {}
+                State::Literal => {
+                    if !c.is_alphanumeric() {
+                        self.store_token_and_trans_state(index);
+                    }
+                }
 
                 // =============== white space ===============
                 State::WhiteSpace => {
@@ -156,7 +162,7 @@ impl Lexer {
                 }
 
                 // =============== end ===============
-                State::End => {}
+                State::End => break,
 
                 State::CommaState
                 | State::PipeState
@@ -165,7 +171,9 @@ impl Lexer {
                 | State::LessThanState
                 | State::DotState
                 | State::ColonState
-                | State::AssignmentState => {
+                | State::AssignmentState
+                | State::SlashState
+                | State::StarState => {
                     self.store_token_and_trans_state(index);
                     self.trans_state(c);
                 }
@@ -207,6 +215,8 @@ impl Lexer {
                 State::ColonState => TokenType::Colon,
                 State::AssignmentState => TokenType::Assignment,
                 State::NumState => TokenType::Num,
+                State::SlashState => TokenType::Slash,
+                State::StarState => TokenType::Star,
                 _ => todo!(),
             };
 
@@ -278,6 +288,8 @@ impl Lexer {
             '.' => State::DotState,
             ':' => State::ColonState,
             '=' => State::AssignmentState,
+            '/' => State::SlashState,
+            '*' => State::StarState,
             '_' => {
                 // underline means the state is not need to change.
                 return self.cur_state.borrow().clone();
