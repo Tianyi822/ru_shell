@@ -37,6 +37,13 @@ enum State {
     SemicolonState,   // ;
     GreaterThanState, // >
     LessThanState,    // <
+    SlashState,       // /
+    StarState,        // *
+    BackgroundState,  // &
+
+    // Combined Symbols
+    AndState, // &&
+    OrState,  // ||
 
     // This state means that the lexer has reached the end of the command.
     End,
@@ -94,6 +101,7 @@ impl Lexer {
 
                 State::LsCommandState => {
                     self.store_token_and_trans_state(index);
+                    self.trans_state(c);
                 }
 
                 // =============== cd command ===============
@@ -107,6 +115,7 @@ impl Lexer {
 
                 State::CdCommandState => {
                     self.store_token_and_trans_state(index);
+                    self.trans_state(c);
                 }
 
                 // =============== number ===============
@@ -117,6 +126,7 @@ impl Lexer {
                         *(self.cur_state.borrow_mut()) = State::NumState;
                     } else {
                         self.store_token_and_trans_state(index);
+                        self.trans_state(c);
                     }
                 }
 
@@ -124,13 +134,14 @@ impl Lexer {
                 State::ParamState => {
                     if c.is_alphabetic() {
                         *(self.cur_state.borrow_mut()) = State::ShortParamState;
-                    } else if c.eq(&'-'){
+                    } else if c.eq(&'-') {
                         *(self.cur_state.borrow_mut()) = State::LongParamState1;
                     }
                 }
 
                 State::ShortParamState => {
                     self.store_token_and_trans_state(index);
+                    self.trans_state(c);
                 }
 
                 // The reason of long parameter is divided into two states is that
@@ -144,37 +155,78 @@ impl Lexer {
                 State::LongParamState => {
                     if !c.is_alphanumeric() {
                         self.store_token_and_trans_state(index);
+                        self.trans_state(c);
                     }
                 }
 
                 // =============== cd command ===============
-                State::Literal => {}
+                State::Literal => {
+                    if !c.is_alphanumeric() {
+                        self.store_token_and_trans_state(index);
+                    }
+                }
 
                 // =============== white space ===============
                 State::WhiteSpace => {
                     self.trans_state(c);
                 }
 
-                // =============== end ===============
-                State::End => {}
-
+                // =============== single symbols ===============
                 State::CommaState
-                | State::PipeState
                 | State::SemicolonState
                 | State::GreaterThanState
                 | State::LessThanState
                 | State::DotState
                 | State::ColonState
-                | State::AssignmentState => {
+                | State::AssignmentState
+                | State::SlashState
+                | State::StarState => {
                     self.store_token_and_trans_state(index);
                     self.trans_state(c);
                 }
+
+                // =============== combined symbols ===============
+                State::BackgroundState => {
+                    if c.eq(&'&') {
+                        *self.cur_state.borrow_mut() = State::AndState;
+                    } else {
+                        self.store_token_and_trans_state(index);
+                        self.trans_state(c);
+                    }
+                }
+
+                State::PipeState => {
+                    if c.eq(&'|') {
+                        *self.cur_state.borrow_mut() = State::OrState;
+                    } else {
+                        self.store_token_and_trans_state(index);
+                        self.trans_state(c);
+                    }
+                }
+
+                State::AndState | State::OrState => {
+                    self.store_token_and_trans_state(index);
+                    self.trans_state(c);
+                }
+
+                // =============== end ===============
+                State::End => break,
             }
         }
 
         // If the lexer's state is not end, we need to store the last token.
         let state = self.cur_state.borrow().clone();
         if state != State::End {
+            // Determine if the state is 'start' to ensure completion of the last token parsing.
+            // If it's 'start', change the state accordingly;
+            // otherwise, store the last token with the current state.
+            //
+            // For the string "&&&", the first token is "&&" and the second is "&".
+            // When parsing the last "&" token, the state reverts to 'start' before "&&" is stored. Therefore,
+            // it's necessary to adjust the state appropriately and store the "&" token.
+            if state == State::Start {
+                self.trans_state(&self.command[self.start_index.borrow().clone()]);
+            }
             self.store_token_and_trans_state(self.command.len());
         }
     }
@@ -207,6 +259,11 @@ impl Lexer {
                 State::ColonState => TokenType::Colon,
                 State::AssignmentState => TokenType::Assignment,
                 State::NumState => TokenType::Num,
+                State::SlashState => TokenType::Slash,
+                State::StarState => TokenType::Star,
+                State::BackgroundState => TokenType::Background,
+                State::AndState => TokenType::And,
+                State::OrState => TokenType::Or,
                 _ => todo!(),
             };
 
@@ -278,6 +335,9 @@ impl Lexer {
             '.' => State::DotState,
             ':' => State::ColonState,
             '=' => State::AssignmentState,
+            '/' => State::SlashState,
+            '*' => State::StarState,
+            '&' => State::BackgroundState,
             '_' => {
                 // underline means the state is not need to change.
                 return self.cur_state.borrow().clone();
