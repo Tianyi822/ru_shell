@@ -100,8 +100,7 @@ impl Lexer {
                 }
 
                 State::LsCommandState => {
-                    self.store_token_and_trans_state(index);
-                    self.trans_state(c);
+                    self.store_token_and_trans_state(index, c);
                 }
 
                 // =============== cd command ===============
@@ -114,8 +113,7 @@ impl Lexer {
                 }
 
                 State::CdCommandState => {
-                    self.store_token_and_trans_state(index);
-                    self.trans_state(c);
+                    self.store_token_and_trans_state(index, c);
                 }
 
                 // =============== number ===============
@@ -125,8 +123,7 @@ impl Lexer {
                     } else if state == State::NumState && c.eq(&'_') {
                         *(self.cur_state.borrow_mut()) = State::NumState;
                     } else {
-                        self.store_token_and_trans_state(index);
-                        self.trans_state(c);
+                        self.store_token_and_trans_state(index, c);
                     }
                 }
 
@@ -140,8 +137,7 @@ impl Lexer {
                 }
 
                 State::ShortParamState => {
-                    self.store_token_and_trans_state(index);
-                    self.trans_state(c);
+                    self.store_token_and_trans_state(index, c);
                 }
 
                 // The reason of long parameter is divided into two states is that
@@ -154,15 +150,14 @@ impl Lexer {
 
                 State::LongParamState => {
                     if !c.is_alphanumeric() {
-                        self.store_token_and_trans_state(index);
-                        self.trans_state(c);
+                        self.store_token_and_trans_state(index, c);
                     }
                 }
 
                 // =============== cd command ===============
                 State::Literal => {
                     if !c.is_alphanumeric() {
-                        self.store_token_and_trans_state(index);
+                        self.store_token_and_trans_state(index, c);
                     }
                 }
 
@@ -181,8 +176,7 @@ impl Lexer {
                 | State::AssignmentState
                 | State::SlashState
                 | State::StarState => {
-                    self.store_token_and_trans_state(index);
-                    self.trans_state(c);
+                    self.store_token_and_trans_state(index, c);
                 }
 
                 // =============== combined symbols ===============
@@ -190,8 +184,7 @@ impl Lexer {
                     if c.eq(&'&') {
                         *self.cur_state.borrow_mut() = State::AndState;
                     } else {
-                        self.store_token_and_trans_state(index);
-                        self.trans_state(c);
+                        self.store_token_and_trans_state(index, c);
                     }
                 }
 
@@ -199,14 +192,12 @@ impl Lexer {
                     if c.eq(&'|') {
                         *self.cur_state.borrow_mut() = State::OrState;
                     } else {
-                        self.store_token_and_trans_state(index);
-                        self.trans_state(c);
+                        self.store_token_and_trans_state(index, c);
                     }
                 }
 
                 State::AndState | State::OrState => {
-                    self.store_token_and_trans_state(index);
-                    self.trans_state(c);
+                    self.store_token_and_trans_state(index, c);
                 }
 
                 // =============== end ===============
@@ -227,13 +218,13 @@ impl Lexer {
             if state == State::Start {
                 self.trans_state(&self.command[self.start_index.borrow().clone()]);
             }
-            self.store_token_and_trans_state(self.command.len());
+            self.store_token_and_trans_state(self.command.len(), &' ');
         }
     }
 
     // Store token and transform state.
-    fn store_token_and_trans_state(&self, cur_index: usize) {
-        let mut state = self.cur_state.borrow_mut();
+    fn store_token_and_trans_state(&self, cur_index: usize, cur_char: &char) {
+        let state = self.cur_state.borrow().clone();
         let mut start_index = self.start_index.borrow_mut();
 
         // Move start index to end index for ready to read next token.
@@ -243,9 +234,9 @@ impl Lexer {
         let literal = self.command[*start_index..cur_index].iter().collect();
         *start_index = cur_index;
 
-        if !(*state == State::WhiteSpace) {
+        if !(state == State::WhiteSpace) {
             // Match the state to get the token type.
-            let token_type = match *state {
+            let token_type = match state {
                 State::LsCommandState => TokenType::Ls,
                 State::CdCommandState => TokenType::Cd,
                 State::ShortParamState => TokenType::ShortParam,
@@ -275,10 +266,11 @@ impl Lexer {
         // Judge whether the state should be reset or be end.
         if *start_index < self.command.len() {
             // Reset lexer state
-            *state = State::Start;
+            // *state = State::Start;
+            self.trans_state(cur_char);
         } else {
             *start_index = self.command.len() - 1;
-            *state = State::End;
+            *self.cur_state.borrow_mut() = State::End;
         }
     }
 
