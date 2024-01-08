@@ -118,10 +118,10 @@ impl Lexer {
 
                 // =============== number ===============
                 State::NumState => {
-                    if c.is_numeric() {
+                    if c.is_numeric() || (state == State::NumState && c.eq(&'_')) {
                         *(self.cur_state.borrow_mut()) = State::NumState;
-                    } else if state == State::NumState && c.eq(&'_') {
-                        *(self.cur_state.borrow_mut()) = State::NumState;
+                    } else if c.is_alphabetic() {
+                        *(self.cur_state.borrow_mut()) = State::Literal;
                     } else {
                         self.store_token_and_trans_state(index, c);
                     }
@@ -156,7 +156,7 @@ impl Lexer {
 
                 // =============== cd command ===============
                 State::Literal => {
-                    if !c.is_alphanumeric() {
+                    if !(c.is_alphanumeric() || c.eq(&'_')) {
                         self.store_token_and_trans_state(index, c);
                     }
                 }
@@ -255,6 +255,7 @@ impl Lexer {
                 State::BackgroundState => TokenType::Background,
                 State::AndState => TokenType::And,
                 State::OrState => TokenType::Or,
+                State::Literal => TokenType::Literal,
                 _ => todo!(),
             };
 
