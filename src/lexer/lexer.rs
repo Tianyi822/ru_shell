@@ -2,54 +2,7 @@ use std::cell::RefCell;
 
 use crate::token::token::{Token, TokenType};
 
-// Each state represents the stage to which the command has currently been parsed by the lexer.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum State {
-    Start,
-
-    Literal,
-
-    // ls command
-    LsCommandState1,
-    LsCommandState,
-
-    // cd command
-    CdCommandState1,
-    CdCommandState,
-
-    // number
-    NumState,
-
-    // Parameter: if the first char is '-' then  transform state to Param.
-    ParamState,
-    // short parameter (-short)
-    ShortParamState,
-    // long parameter (--long)
-    LongParamState1,
-    LongParamState,
-
-    // Single Symbols
-    PipeState,        // |
-    CommaState,       // ,
-    DotState,         // .
-    ColonState,       // :
-    AssignmentState,  // =
-    SemicolonState,   // ;
-    GreaterThanState, // >
-    LessThanState,    // <
-    SlashState,       // /
-    StarState,        // *
-    BackgroundState,  // &
-
-    // Combined Symbols
-    AndState, // &&
-    OrState,  // ||
-
-    // This state means that the lexer has reached the end of the command.
-    End,
-
-    WhiteSpace,
-}
+use super::State;
 
 // This lexer is designed based on the concept of FA (Finite Automata).
 #[derive(Debug)]
