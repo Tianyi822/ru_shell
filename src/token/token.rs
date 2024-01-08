@@ -1,6 +1,6 @@
 // Token type will be used in Token
 #[allow(dead_code)]
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum TokenType {
     // Commands
     Ls, // ls
@@ -46,7 +46,7 @@ pub enum TokenType {
     Or,                   // ||
 }
 
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 // This struct stores the token information that the lexer will analyze.
 // And the parser will use the token to build the AST.
 pub struct Token {
