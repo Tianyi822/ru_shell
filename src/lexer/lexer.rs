@@ -21,9 +21,40 @@ pub struct Lexer {
     cur_state: RefCell<State>,
 }
 
+// Lexer iterator
+pub struct LexerIter<'a> {
+    lexer: &'a Lexer,
+    position: usize,
+}
+
+impl<'a> Lexer {
+    pub fn iter(&'a self) -> LexerIter<'a> {
+        LexerIter {
+            lexer: self,
+            position: 0,
+        }
+    }
+}
+
+// Implement Iterator trait for LexerIter
+impl<'a> Iterator for LexerIter<'a> {
+    type Item = Token;
+
+    // The next() method returns an Option<Token> because it returns None when it reaches the end of the token list.
+    // Parser will use this method to get tokens.
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.position >= self.lexer.tokens.borrow().len() {
+            return None;
+        }
+        self.position += 1;
+        
+        Some(self.lexer.tokens.borrow()[self.position].clone())
+    }
+}
+
 impl Lexer {
     pub fn new(command: String) -> Lexer {
-        let mut l = Lexer {
+        let l = Lexer {
             command: command.chars().collect(),
             start_index: RefCell::new(0),
             tokens: RefCell::new(Vec::new()),
@@ -36,7 +67,7 @@ impl Lexer {
     }
 
     // Analyze the command and generate tokens.
-    fn analyze_command(&mut self) {
+    fn analyze_command(&self) {
         // Iterate the command char by char.
         for (index, c) in self.command.iter().enumerate() {
             let state = self.cur_state.borrow().clone();
