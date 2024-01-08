@@ -46,9 +46,11 @@ impl<'a> Iterator for LexerIter<'a> {
         if self.position >= self.lexer.tokens.borrow().len() {
             return None;
         }
+
+        let token = self.lexer.tokens.borrow()[self.position].clone();
         self.position += 1;
         
-        Some(self.lexer.tokens.borrow()[self.position].clone())
+        Some(token)
     }
 }
 

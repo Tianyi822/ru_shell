@@ -11,6 +11,17 @@ mod test {
     }
 
     #[test]
+    fn test_lexer_iter() {
+        let l = Lexer::new(
+            "a abc _abc _123 Abc_de 123_abc 123_A_b   ,| ;  >   < .:= /* & && &&& ||".to_string(),
+        );
+
+        for (index, token) in l.iter().enumerate() {
+            println!("{}: {:#?}", index, token);
+        }
+    }
+
+    #[test]
     fn test_lexer_one_param() {
         let l = Lexer::new(
             "ls -t".to_string(),
