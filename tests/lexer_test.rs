@@ -245,4 +245,68 @@ mod test {
         assert_eq!(token_1_0000_0000_0000.token_type, l.tokens.borrow()[5].token_type);
         assert_eq!(token_1_0000_0000_0000.literal, l.tokens.borrow()[5].literal);
     }
+
+    #[test]
+    fn test_literal_tokens() {
+        let l = Lexer::new(
+            "a abc _abc _123 Abc_de 123_abc 123_A_b".to_string(),
+        );
+
+        // println!("{:#?}", l);
+
+        let token_a = Token::new(
+            TokenType::Literal,
+            "a".to_string(),
+        );
+        assert_eq!(token_a.token_type, l.tokens.borrow()[0].token_type);
+        assert_eq!(token_a.literal, l.tokens.borrow()[0].literal);
+
+
+        let token_abc = Token::new(
+            TokenType::Literal,
+            "abc".to_string(),
+        );
+        assert_eq!(token_abc.token_type, l.tokens.borrow()[1].token_type);
+        assert_eq!(token_abc.literal, l.tokens.borrow()[1].literal);
+
+
+        let token_abc_2 = Token::new(
+            TokenType::Literal,
+            "_abc".to_string(),
+        );
+        assert_eq!(token_abc_2.token_type, l.tokens.borrow()[2].token_type);
+        assert_eq!(token_abc_2.literal, l.tokens.borrow()[2].literal);
+
+
+        let token_123 = Token::new(
+            TokenType::Literal,
+            "_123".to_string(),
+        );
+        assert_eq!(token_123.token_type, l.tokens.borrow()[3].token_type);
+        assert_eq!(token_123.literal, l.tokens.borrow()[3].literal);
+
+
+        let token_abc_de = Token::new(
+            TokenType::Literal,
+            "Abc_de".to_string(),
+        );
+        assert_eq!(token_abc_de.token_type, l.tokens.borrow()[4].token_type);
+        assert_eq!(token_abc_de.literal, l.tokens.borrow()[4].literal);
+
+
+        let token_123_abc = Token::new(
+            TokenType::Literal,
+            "123_abc".to_string(),
+        );
+        assert_eq!(token_123_abc.token_type, l.tokens.borrow()[5].token_type);
+        assert_eq!(token_123_abc.literal, l.tokens.borrow()[5].literal);
+
+
+        let token_123_a_b = Token::new(
+            TokenType::Literal,
+            "123_A_b".to_string(),
+        );
+        assert_eq!(token_123_a_b.token_type, l.tokens.borrow()[6].token_type);
+        assert_eq!(token_123_a_b.literal, l.tokens.borrow()[6].literal);
+    }
 }
