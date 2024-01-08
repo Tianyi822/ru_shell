@@ -300,41 +300,33 @@ impl Lexer {
             return;
         }
 
-        // We need to check the state of lexer at now.
-        if c.is_alphanumeric() {
-            if *state == State::Start || *state == State::WhiteSpace {
-                *state = self.select_state(c);
-            }
-        } else if c.is_whitespace() {
+        if c.is_whitespace() {
             *state = State::WhiteSpace;
-        } else {
-            *state = self.select_state(c);
+            return;
         }
-    }
 
-    // Select the state by the current char.
-    fn select_state(&self, c: &char) -> State {
         match c {
-            'l' => State::LsCommandState1,
-            'c' => State::CdCommandState1,
-            '0'..='9' => State::NumState,
-            '-' => State::ParamState,
-            '|' => State::PipeState,
-            ',' => State::CommaState,
-            ';' => State::SemicolonState,
-            '>' => State::GreaterThanState,
-            '<' => State::LessThanState,
-            '.' => State::DotState,
-            ':' => State::ColonState,
-            '=' => State::AssignmentState,
-            '/' => State::SlashState,
-            '*' => State::StarState,
-            '&' => State::BackgroundState,
+            'l' => *state = State::LsCommandState1,
+            'c' => *state = State::CdCommandState1,
+            '0'..='9' => *state = State::NumState,
+            '-' => *state = State::ParamState,
+            '|' => *state = State::PipeState,
+            ',' => *state = State::CommaState,
+            ';' => *state = State::SemicolonState,
+            '>' => *state = State::GreaterThanState,
+            '<' => *state = State::LessThanState,
+            '.' => *state = State::DotState,
+            ':' => *state = State::ColonState,
+            '=' => *state = State::AssignmentState,
+            '/' => *state = State::SlashState,
+            '*' => *state = State::StarState,
+            '&' => *state = State::BackgroundState,
             '_' => {
-                // underline means the state is not need to change.
-                return self.cur_state.borrow().clone();
+                if *state == State::StarState || *state == State::WhiteSpace {
+                    *state = State::Literal;
+                }
             }
-            _ => State::Literal,
+            _ => *state = State::Literal,
         }
     }
 }
