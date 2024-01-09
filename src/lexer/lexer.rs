@@ -14,7 +14,7 @@ pub struct Lexer {
     start_index: RefCell<usize>,
 
     // Store the tokens that are parsed.
-    pub tokens: RefCell<Vec<Token>>,
+    tokens: RefCell<Vec<Token>>,
 
     // This is a key field to show the state about lexer at now.
     // It's used to define the type of the token currently.
