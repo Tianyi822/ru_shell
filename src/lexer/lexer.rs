@@ -22,7 +22,7 @@ pub struct Lexer {
 
     // Current index of token vector.
     // This field is used to iterate the tokens.
-    position: usize,
+    position: RefCell<usize>,
 }
 
 impl Lexer {
@@ -32,7 +32,7 @@ impl Lexer {
             start_index: RefCell::new(0),
             tokens: RefCell::new(Vec::new()),
             cur_state: RefCell::new(State::Start),
-            position: 0,
+            position: RefCell::new(0),
         };
 
         l.analyze_command();
@@ -43,12 +43,14 @@ impl Lexer {
     // Iterate the tokens.
     pub fn next_token(&mut self) -> Option<Token> {
         let tokens = self.tokens.borrow();
-        if self.position >= tokens.len() {
+        let mut position = self.position.borrow_mut();
+
+        if *position >= tokens.len() {
             return None;
         }
 
-        let token = tokens[self.position].clone();
-        self.position += 1;
+        let token = tokens[*position].clone();
+        *position += 1;
 
         Some(token)
     }
@@ -56,11 +58,12 @@ impl Lexer {
     // Peek the next token.
     pub fn peek_token(&self) -> Option<Token> {
         let tokens = self.tokens.borrow();
-        if self.position >= tokens.len() {
+        let position = self.position.borrow();
+        if *position >= tokens.len() {
             return None;
         }
 
-        let token = tokens[self.position].clone();
+        let token = tokens[*position].clone();
 
         Some(token)
     }
