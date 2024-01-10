@@ -41,7 +41,7 @@ impl Lexer {
     }
 
     // Iterate the tokens.
-    pub fn next_token(&mut self) -> Option<Token> {
+    pub fn next_token(&self) -> Option<Token> {
         let tokens = self.tokens.borrow();
         let mut position = self.position.borrow_mut();
 
