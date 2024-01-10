@@ -44,6 +44,9 @@ pub enum TokenType {
     NotEqualTo,           // !=
     And,                  // &&
     Or,                   // ||
+
+    // End of File
+    Eof,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
