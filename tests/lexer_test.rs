@@ -29,8 +29,8 @@ mod test {
         ];
 
         for (index, token) in l.iter().enumerate() {
-            assert_eq!(tokens[index].token_type, token.token_type);
-            assert_eq!(tokens[index].literal, token.literal);
+            assert_eq!(*tokens[index].token_type(), *token.token_type());
+            assert_eq!(tokens[index].literal(), token.literal());
         }
     }
 
@@ -46,8 +46,8 @@ mod test {
         ];
 
         for (index, token) in l.iter().enumerate() {
-            assert_eq!(tokens[index].token_type, token.token_type);
-            assert_eq!(tokens[index].literal, token.literal);
+            assert_eq!(*tokens[index].token_type(), *token.token_type());
+            assert_eq!(tokens[index].literal(), token.literal());
         }
     }
 
@@ -58,8 +58,8 @@ mod test {
         let tokens = vec![Token::new(TokenType::Cd, "cd".to_string())];
 
         for (index, token) in l.iter().enumerate() {
-            assert_eq!(tokens[index].token_type, token.token_type);
-            assert_eq!(tokens[index].literal, token.literal);
+            assert_eq!(*tokens[index].token_type(), *token.token_type());
+            assert_eq!(tokens[index].literal(), token.literal());
         }
     }
 
@@ -74,8 +74,8 @@ mod test {
         ];
 
         for (index, token) in l.iter().enumerate() {
-            assert_eq!(tokens[index].token_type, token.token_type);
-            assert_eq!(tokens[index].literal, token.literal);
+            assert_eq!(*tokens[index].token_type(), *token.token_type());
+            assert_eq!(tokens[index].literal(), token.literal());
         }
     }
 
@@ -102,8 +102,8 @@ mod test {
         ];
 
         for (index, token) in l.iter().enumerate() {
-            assert_eq!(tokens[index].token_type, token.token_type);
-            assert_eq!(tokens[index].literal, token.literal);
+            assert_eq!(*tokens[index].token_type(), *token.token_type());
+            assert_eq!(tokens[index].literal(), token.literal());
         }
     }
 
@@ -121,8 +121,8 @@ mod test {
         ];
 
         for (index, token) in l.iter().enumerate() {
-            assert_eq!(tokens[index].token_type, token.token_type);
-            assert_eq!(tokens[index].literal, token.literal);
+            assert_eq!(*tokens[index].token_type(), *token.token_type());
+            assert_eq!(tokens[index].literal(), token.literal());
         }
     }
 
@@ -141,8 +141,8 @@ mod test {
         ];
 
         for (index, token) in l.iter().enumerate() {
-            assert_eq!(tokens[index].token_type, token.token_type);
-            assert_eq!(tokens[index].literal, token.literal);
+            assert_eq!(*tokens[index].token_type(), *token.token_type());
+            assert_eq!(tokens[index].literal(), token.literal());
         }
     }
 }

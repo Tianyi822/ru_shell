@@ -50,8 +50,8 @@ pub enum TokenType {
 // This struct stores the token information that the lexer will analyze.
 // And the parser will use the token to build the AST.
 pub struct Token {
-    pub token_type: TokenType,
-    pub literal: String,
+    token_type: TokenType,
+    literal: String,
 }
 
 impl Token {
@@ -61,5 +61,13 @@ impl Token {
             token_type,
             literal,
         }
+    }
+
+    pub fn literal(&self) -> &str {
+        &self.literal
+    }
+
+    pub fn token_type(&self) -> &TokenType {
+        &self.token_type
     }
 }
