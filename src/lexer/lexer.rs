@@ -19,39 +19,10 @@ pub struct Lexer {
     // This is a key field to show the state about lexer at now.
     // It's used to define the type of the token currently.
     cur_state: RefCell<State>,
-}
 
-// Lexer iterator
-pub struct LexerIter<'a> {
-    lexer: &'a Lexer,
+    // Current index of token vector.
+    // This field is used to iterate the tokens.
     position: usize,
-}
-
-impl<'a> Lexer {
-    pub fn iter(&'a self) -> LexerIter<'a> {
-        LexerIter {
-            lexer: self,
-            position: 0,
-        }
-    }
-}
-
-// Implement Iterator trait for LexerIter
-impl<'a> Iterator for LexerIter<'a> {
-    type Item = Token;
-
-    // The next() method returns an Option<Token> because it returns None when it reaches the end of the token list.
-    // Parser will use this method to get tokens.
-    fn next(&mut self) -> Option<Self::Item> {
-        if self.position >= self.lexer.tokens.borrow().len() {
-            return None;
-        }
-
-        let token = self.lexer.tokens.borrow()[self.position].clone();
-        self.position += 1;
-        
-        Some(token)
-    }
 }
 
 impl Lexer {
@@ -61,11 +32,37 @@ impl Lexer {
             start_index: RefCell::new(0),
             tokens: RefCell::new(Vec::new()),
             cur_state: RefCell::new(State::Start),
+            position: 0,
         };
 
         l.analyze_command();
 
         l
+    }
+
+    // Iterate the tokens.
+    pub fn next_token(&mut self) -> Option<Token> {
+        let tokens = self.tokens.borrow();
+        if self.position >= tokens.len() {
+            return None;
+        }
+
+        let token = tokens[self.position].clone();
+        self.position += 1;
+
+        Some(token)
+    }
+
+    // Peek the next token.
+    pub fn peek_token(&self) -> Option<Token> {
+        let tokens = self.tokens.borrow();
+        if self.position >= tokens.len() {
+            return None;
+        }
+
+        let token = tokens[self.position].clone();
+
+        Some(token)
     }
 
     // Analyze the command and generate tokens.
