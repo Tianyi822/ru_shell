@@ -26,6 +26,7 @@ mod test {
         let tokens = vec![
             Token::new(TokenType::Ls, "ls".to_string()),
             Token::new(TokenType::ShortParam, "-t".to_string()),
+            Token::new(TokenType::Eof, "".to_string()),
         ];
 
         for token in tokens.iter() {
@@ -44,6 +45,7 @@ mod test {
             Token::new(TokenType::ShortParam, "-l".to_string()),
             Token::new(TokenType::ShortParam, "-h".to_string()),
             Token::new(TokenType::ShortParam, "-t".to_string()),
+            Token::new(TokenType::Eof, "".to_string()),
         ];
 
         for token in tokens.iter() {
@@ -57,7 +59,10 @@ mod test {
     fn test_cd_command() {
         let l = Lexer::new("cd".to_string());
 
-        let tokens = vec![Token::new(TokenType::Cd, "cd".to_string())];
+        let tokens = vec![
+            Token::new(TokenType::Cd, "cd".to_string()),
+            Token::new(TokenType::Eof, "".to_string()),
+        ];
 
         for token in tokens.iter() {
             let next_token = l.next_token().unwrap();
@@ -74,6 +79,7 @@ mod test {
             Token::new(TokenType::Ls, "ls".to_string()),
             Token::new(TokenType::ShortParam, "-l".to_string()),
             Token::new(TokenType::LongParam, "--lp".to_string()),
+            Token::new(TokenType::Eof, "".to_string()),
         ];
 
         for token in tokens.iter() {
@@ -103,6 +109,7 @@ mod test {
             Token::new(TokenType::And, "&&".to_string()),
             Token::new(TokenType::Background, "&".to_string()),
             Token::new(TokenType::Or, "||".to_string()),
+            Token::new(TokenType::Eof, "".to_string()),
         ];
 
         for token in tokens.iter() {
@@ -123,6 +130,7 @@ mod test {
             Token::new(TokenType::Num, "12_3456".to_string()),
             Token::new(TokenType::Num, "1_000_000".to_string()),
             Token::new(TokenType::Num, "1_0000_0000_0000".to_string()),
+            Token::new(TokenType::Eof, "".to_string()),
         ];
 
         for token in tokens.iter() {
@@ -144,6 +152,7 @@ mod test {
             Token::new(TokenType::Literal, "Abc_de".to_string()),
             Token::new(TokenType::Literal, "123_abc".to_string()),
             Token::new(TokenType::Literal, "123_A_b".to_string()),
+            Token::new(TokenType::Eof, "".to_string()),
         ];
 
         for token in tokens.iter() {

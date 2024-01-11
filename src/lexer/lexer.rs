@@ -199,8 +199,8 @@ impl Lexer {
             // otherwise, store the last token with the current state.
             //
             // For the string "&&&", the first token is "&&" and the second is "&".
-            // When parsing the last "&" token, the state reverts to 'start' before "&&" is stored. Therefore,
-            // it's necessary to adjust the state appropriately and store the "&" token.
+            // When parsing the last "&" token, the state reverts to 'start' before "&&" is stored.
+            // Therefore, it's necessary to adjust the state appropriately and store the "&" token.
             if state == State::Start {
                 self.trans_state(&self.command[self.start_index.borrow().clone()]);
             }
@@ -258,6 +258,11 @@ impl Lexer {
         } else {
             *start_index = self.command.len() - 1;
             *self.cur_state.borrow_mut() = State::End;
+
+            // Add a EOF token to the end for the parser to determine the end of the command.
+            self.tokens
+                .borrow_mut()
+                .push(Token::new(TokenType::Eof, "".to_string()));
         }
     }
 
