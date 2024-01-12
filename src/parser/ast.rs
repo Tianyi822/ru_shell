@@ -25,8 +25,8 @@ impl CommandAstNode for LsCommand {
         self.token.literal()
     }
 
-    fn set_option(&mut self, option: &str, value: &str) {
-        self.option.insert(option.to_string(), value.to_string());
+    fn set_option(&mut self, option: String, value: String) {
+        self.option.insert(option, value);
     }
 
     fn get_option(&self, option: &str) -> Option<&str> {

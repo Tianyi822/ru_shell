@@ -25,6 +25,7 @@ use super::{ast::LsCommand, CommandAstNode};
 //
 // In the parser_*_command() function, the parser will parse the token by the grammar of the command.
 // If some errors occur, the parser will record the errors and stops parsing.
+#[derive(Debug)]
 pub struct Parser {
     // The lexer that will generate tokens.
     lexer: Lexer,
@@ -33,14 +34,14 @@ pub struct Parser {
     cur_token: RefCell<Option<Token>>,
 
     // The command AST that the parser will build.
-    command_ast: Vec<Box<dyn CommandAstNode>>,
+    command_ast: RefCell<Vec<Box<dyn CommandAstNode>>>,
 }
 
 impl Parser {
-    pub fn new(input: String) -> Parser {
+    pub fn new(input: &str) -> Parser {
         let parser = Parser {
             lexer: Lexer::new(input),
-            command_ast: Vec::new(),
+            command_ast: RefCell::new(Vec::new()),
             cur_token: RefCell::new(None),
         };
 
@@ -55,22 +56,29 @@ impl Parser {
     fn parse_command(&self) {
         loop {
             let cur_token = self.cur_token.borrow().clone();
-            match cur_token {
+            let ast_node: Box<dyn CommandAstNode> = match cur_token {
                 Some(ref token) => match token.token_type() {
-                    TokenType::Ls => self.parse_ls_command(),
-                    TokenType::Eof => break,
-                    _ => println!("Unknown command"),
+                    TokenType::Ls => Box::new(self.parse_ls_command()),
+                    _ => break,
                 },
                 None => break,
-            }
+            };
+            // Store the AST node.
+            self.store_ast_node(ast_node);
             self.next_token();
         }
     }
 
+    // Store the AST node.
+    fn store_ast_node(&self, ast_node: Box<dyn CommandAstNode>) {
+        let mut command_ast = self.command_ast.borrow_mut();
+        command_ast.push(ast_node);
+    }
+
     // Parse ls command
-    fn parse_ls_command(&self) {
+    fn parse_ls_command(&self) -> LsCommand {
         // Build the ls command node.
-        let _ls_command = match self.cur_token.borrow().clone() {
+        let mut ls_command = match self.cur_token.borrow().clone() {
             Some(token) => LsCommand::new(token),
             None => panic!("No token"),
         };
@@ -78,9 +86,25 @@ impl Parser {
         self.next_token();
 
         // Parse the parameters of the ls command.
-        while self.parse_params().is_some() {
-            todo!("store params");
+        loop {
+            let cur_token = self.cur_token.borrow().clone();
+            match cur_token {
+                Some(ref token) => match token.token_type() {
+                    TokenType::ShortParam | TokenType::LongParam => {
+                        match self.parse_params() {
+                            Some((param, value)) => {
+                                ls_command.set_option(param, value);
+                            }
+                            None => break,
+                        };
+                    }
+                    _ => break,
+                },
+                None => break,
+            }
         }
+
+        ls_command
     }
 
     // Parse the parameters of the command.
@@ -90,18 +114,54 @@ impl Parser {
             None => return None,
         };
 
+        // Get the parameter and its value.
         if *cur_token.token_type() == TokenType::ShortParam
             || *cur_token.token_type() == TokenType::LongParam
         {
             let param = cur_token.literal().to_string();
+
             self.next_token();
 
-            let value = match self.cur_token.borrow().clone() {
-                Some(token) => token.literal().to_string(),
-                None => return None,
+            let value = match self.parse_param_value() {
+                Some(value) => value,
+                None => "".to_string(),
             };
 
             return Some((param, value));
+        }
+
+        None
+    }
+
+    // Parse the value of the parameter.
+    // The reason why the value of the parameter is optional is that
+    // user can set the value like this:
+    // 1. ls -l                 : the '-l' parameter has no value.
+    // 2. ls --tree --depth 3   : the value '3' is assigned to the '--depth' parameter without '='.
+    // 3. ls --color=auto       : the value 'auto' is assigned to the '--color' parameter with '='.
+    // So it is necessary to check in what way the value is assigned to the parameter.
+    fn parse_param_value(&self) -> Option<String> {
+        let cur_token = match self.cur_token.borrow().clone() {
+            Some(token) => token,
+            None => return None,
+        };
+
+        // Skip the assignment operator.
+        if *cur_token.token_type() == TokenType::Assignment {
+            self.next_token();
+        }
+        self.next_token();
+
+        let cur_token = match self.cur_token.borrow().clone() {
+            Some(token) => token,
+            None => return None,
+        };
+
+        if *cur_token.token_type() == TokenType::Literal {
+            let value = cur_token.literal().to_string();
+            self.next_token();
+
+            return Some(value);
         }
 
         None

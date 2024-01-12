@@ -3,7 +3,7 @@ pub mod parser;
 
 trait CommandAstNode {
     fn name(&self) -> &str;
-    fn set_option(&mut self, option: &str, value: &str);
+    fn set_option(&mut self, option: String, value: String);
     fn get_option(&self, option: &str) -> Option<&str>;
 }
 
