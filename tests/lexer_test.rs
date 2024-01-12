@@ -5,14 +5,13 @@ mod test {
 
     #[test]
     fn test_new_lexer() {
-        Lexer::new("ls -l -h -t".to_string());
+        Lexer::new("ls -l -h -t");
     }
 
     #[test]
     fn test_lexer_iter() {
-        let _l = Lexer::new(
-            "a abc _abc _123 Abc_de 123_abc 123_A_b   ,| ;  >   < .:= /* & && &&& ||".to_string(),
-        );
+        let _l =
+            Lexer::new("a abc _abc _123 Abc_de 123_abc 123_A_b   ,| ;  >   < .:= /* & && &&& ||");
 
         // while let Some(token) = l.next_token() {
         //     println!("{:?}", token);
@@ -21,7 +20,7 @@ mod test {
 
     #[test]
     fn test_lexer_one_param() {
-        let l = Lexer::new("ls -t".to_string());
+        let l = Lexer::new("ls -t");
 
         let tokens = vec![
             Token::new(TokenType::Ls, "ls".to_string()),
@@ -38,7 +37,7 @@ mod test {
 
     #[test]
     fn test_lexer_more_short_param() {
-        let l = Lexer::new("ls -l -h -t".to_string());
+        let l = Lexer::new("ls -l -h -t");
 
         let tokens = vec![
             Token::new(TokenType::Ls, "ls".to_string()),
@@ -57,7 +56,7 @@ mod test {
 
     #[test]
     fn test_cd_command() {
-        let l = Lexer::new("cd".to_string());
+        let l = Lexer::new("cd");
 
         let tokens = vec![
             Token::new(TokenType::Cd, "cd".to_string()),
@@ -73,7 +72,7 @@ mod test {
 
     #[test]
     fn test_parse_long_param() {
-        let l = Lexer::new("  ls -l --lp  ".to_string());
+        let l = Lexer::new("  ls -l --lp  ");
 
         let tokens = vec![
             Token::new(TokenType::Ls, "ls".to_string()),
@@ -91,7 +90,7 @@ mod test {
 
     #[test]
     fn test_single_symbols() {
-        let l = Lexer::new("   ,| ;  >   < .:= /* & && &&& ||".to_string());
+        let l = Lexer::new("   ,| ;  >   < .:= /* & && &&& ||");
 
         let tokens = vec![
             Token::new(TokenType::Comma, ",".to_string()),
@@ -121,7 +120,7 @@ mod test {
 
     #[test]
     fn test_num_tokens() {
-        let l = Lexer::new("123 456 123_456 12_3456 1_000_000 1_0000_0000_0000".to_string());
+        let l = Lexer::new("123 456 123_456 12_3456 1_000_000 1_0000_0000_0000");
 
         let tokens = vec![
             Token::new(TokenType::Num, "123".to_string()),
@@ -142,7 +141,7 @@ mod test {
 
     #[test]
     fn test_literal_tokens() {
-        let l = Lexer::new("a abc _abc _123 Abc_de 123_abc 123_A_b".to_string());
+        let l = Lexer::new("a abc _abc _123 Abc_de 123_abc 123_A_b");
 
         let tokens = vec![
             Token::new(TokenType::Literal, "a".to_string()),

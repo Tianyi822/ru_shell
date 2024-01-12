@@ -26,7 +26,8 @@ pub struct Lexer {
 }
 
 impl Lexer {
-    pub fn new(command: String) -> Lexer {
+    /// Creates a new [`Lexer`].
+    pub fn new(command: &str) -> Lexer {
         let l = Lexer {
             command: command.chars().collect(),
             start_index: RefCell::new(0),
