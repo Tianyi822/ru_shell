@@ -122,10 +122,7 @@ impl Parser {
 
             self.next_token();
 
-            let value = match self.parse_param_value() {
-                Some(value) => value,
-                None => "".to_string(),
-            };
+            let value = self.parse_param_value().unwrap_or_else(|| "".to_string());
 
             return Some((param, value));
         }
@@ -150,14 +147,13 @@ impl Parser {
         if *cur_token.token_type() == TokenType::Assignment {
             self.next_token();
         }
-        self.next_token();
 
         let cur_token = match self.cur_token.borrow().clone() {
             Some(token) => token,
             None => return None,
         };
 
-        if *cur_token.token_type() == TokenType::Literal {
+        if *cur_token.token_type() == TokenType::Literal || *cur_token.token_type() == TokenType::Num {
             let value = cur_token.literal().to_string();
             self.next_token();
 

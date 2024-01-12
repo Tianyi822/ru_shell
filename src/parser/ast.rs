@@ -4,6 +4,7 @@ use crate::token::token::Token;
 
 use super::CommandAstNode;
 
+#[derive(Debug)]
 pub struct LsCommand {
     token: Token,
     option: HashMap<String, String>,
