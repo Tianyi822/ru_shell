@@ -53,17 +53,20 @@ impl Parser {
         parser
     }
 
+    // Parse the command and return the AST.
     fn parse_command(&self) {
         loop {
             let cur_token = self.cur_token.borrow().clone();
+            // Parse the corresponding command based on the token type
+            // and return the parsed AST (Abstract Syntax Tree) node.
             let ast_node: Box<dyn CommandAstNode> = match cur_token {
                 Some(ref token) => match token.token_type() {
-                    TokenType::Ls => Box::new(self.parse_ls_command()),
+                    TokenType::Ls => Box::new(self.parse_ls_command()), // Parse ls command.
                     _ => break,
                 },
                 None => break,
             };
-            // Store the AST node.
+            // Store the AST node and move to next token.
             self.store_ast_node(ast_node);
             self.next_token();
         }
@@ -102,6 +105,21 @@ impl Parser {
                 },
                 None => break,
             }
+        }
+
+        // Parse the values of the ls command.
+        loop {
+            let cur_token = self.cur_token.borrow().clone();
+            match cur_token {
+                Some(ref token) => match token.token_type() {
+                    TokenType::Literal | TokenType::Num => {
+                        ls_command.add_value(token.literal().to_string());
+                    }
+                    _ => break,
+                },
+                None => break,
+            }
+            self.next_token();
         }
 
         ls_command

@@ -8,7 +8,7 @@ use super::CommandAstNode;
 pub struct LsCommand {
     token: Token,
     option: HashMap<String, String>,
-    path: Vec<String>,
+    value: Vec<String>,
 }
 
 impl LsCommand {
@@ -16,7 +16,7 @@ impl LsCommand {
         LsCommand {
             token,
             option: HashMap::new(),
-            path: Vec::new(),
+            value: Vec::new(),
         }
     }
 }
@@ -32,5 +32,9 @@ impl CommandAstNode for LsCommand {
 
     fn get_option(&self, option: &str) -> Option<&str> {
         self.option.get(option).map(|s| s.as_str())
+    }
+
+    fn add_value(&mut self, value: String) {
+        self.value.push(value)
     }
 }
