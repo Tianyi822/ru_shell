@@ -90,7 +90,7 @@ mod test {
 
     #[test]
     fn test_single_symbols() {
-        let l = Lexer::new("   ,| ;  >   < .:= /* & && &&& ||");
+        let l = Lexer::new("   ,| ;  >   < .:= /* & && &&& || ~");
 
         let tokens = vec![
             Token::new(TokenType::Comma, ",".to_string()),
@@ -108,6 +108,7 @@ mod test {
             Token::new(TokenType::And, "&&".to_string()),
             Token::new(TokenType::Background, "&".to_string()),
             Token::new(TokenType::Or, "||".to_string()),
+            Token::new(TokenType::Tilde, "~".to_string()),
             Token::new(TokenType::Eof, "".to_string()),
         ];
 

@@ -38,6 +38,7 @@ enum State {
     SlashState,       // /
     StarState,        // *
     BackgroundState,  // &
+    TildeState,       // ~
 
     // Combined Symbols
     AndState, // &&

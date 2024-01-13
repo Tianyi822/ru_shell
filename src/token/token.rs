@@ -15,35 +15,36 @@ pub enum TokenType {
     Literal, // Literal
 
     // Single Symbols
-    Pipe,         // |
-    Comma,        // ,
-    Dot,          // .
-    Colon,        // :
-    Minus,        // -
-    Plus,         // +
-    Slash,        // /
-    Star,         // *
-    Assignment,   // =
-    Semicolon,    // ;
-    Background,   // &
-    GreaterThan,  // >
-    LessThan,     // <
-    Not,          // !
-    LeftParen,    // (
-    RightParen,   // )
-    LeftBrace,    // {
-    RightBrace,   // }
-    LeftBracket,  // [
-    RightBracket, // ]
+    Pipe,                   // |
+    Comma,                  // ,
+    Dot,                    // .
+    Colon,                  // :
+    Minus,                  // -
+    Plus,                   // +
+    Slash,                  // /
+    Star,                   // *
+    Assignment,             // =
+    Semicolon,              // ;
+    Background,             // &
+    GreaterThan,            // >
+    LessThan,               // <
+    Not,                    // !
+    LeftParen,              // (
+    RightParen,             // )
+    LeftBrace,              // {
+    RightBrace,             // }
+    LeftBracket,            // [
+    RightBracket,           // ]
+    Tilde,                  // ~
 
     // Combined Symbols
-    DoubleMinus,          // --
-    GreaterThanOrEqualTo, // >=
-    LessThanOrEqualTo,    // <=
-    EqualTo,              // ==
-    NotEqualTo,           // !=
-    And,                  // &&
-    Or,                   // ||
+    DoubleMinus,            // --
+    GreaterThanOrEqualTo,   // >=
+    LessThanOrEqualTo,      // <=
+    EqualTo,                // ==
+    NotEqualTo,             // !=
+    And,                    // &&
+    Or,                     // ||
 
     // End of File
     Eof,
