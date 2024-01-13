@@ -162,7 +162,8 @@ impl Lexer {
                 | State::ColonState
                 | State::AssignmentState
                 | State::SlashState
-                | State::StarState => {
+                | State::StarState
+                | State::TildeState => {
                     self.store_token_and_trans_state(index, c);
                 }
 
@@ -242,6 +243,7 @@ impl Lexer {
                 State::BackgroundState => TokenType::Background,
                 State::AndState => TokenType::And,
                 State::OrState => TokenType::Or,
+                State::TildeState => TokenType::Tilde,
                 State::Literal => TokenType::Literal,
                 _ => todo!(),
             };
@@ -314,6 +316,7 @@ impl Lexer {
             '/' => *state = State::SlashState,
             '*' => *state = State::StarState,
             '&' => *state = State::BackgroundState,
+            '~' => *state = State::TildeState,
             '_' => {
                 if *state == State::StarState || *state == State::WhiteSpace {
                     *state = State::Literal;
