@@ -141,7 +141,7 @@ impl Lexer {
                     }
                 }
 
-                // =============== cd command ===============
+                // =============== Literal ===============
                 State::Literal => {
                     if !(c.is_alphanumeric() || c.eq(&'_')) {
                         self.store_token_and_trans_state(index, c);
