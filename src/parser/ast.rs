@@ -26,8 +26,10 @@ impl CommandAstNode for LsCommand {
         self.token.literal()
     }
 
-    fn set_option(&mut self, option: String, value: String) {
-        self.option.insert(option, value);
+    fn set_options(&mut self, options: Vec<(String, String)>) {
+        for (option, value) in options {
+            self.option.insert(option, value);
+        }
     }
 
     fn get_option(&self, option: &str) -> Option<&str> {
@@ -60,9 +62,11 @@ impl CommandAstNode for CdCommand {
     fn name(&self) -> &str {
         self.token.literal()
     }
-
-    fn set_option(&mut self, option: String, value: String) {
-        self.option.insert(option, value);
+    
+    fn set_options(&mut self, options: Vec<(String, String)>) {
+        for (option, value) in options {
+            self.option.insert(option, value);
+        }
     }
 
     fn get_option(&self, option: &str) -> Option<&str> {
