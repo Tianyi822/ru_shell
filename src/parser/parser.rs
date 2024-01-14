@@ -108,21 +108,42 @@ impl Parser {
         }
 
         // Parse the paths of the ls command.
+        match self.parse_paths() {
+            Some(paths) => ls_command.set_values(paths),
+            None => (),
+        };
+
+        ls_command
+    }
+
+    // Parse the paths of the command.
+    fn parse_paths(&self) -> Option<Vec<String>> {
+        let mut paths: Vec<String> = Vec::new();
+
         loop {
             let cur_token = self.cur_token.borrow().clone();
             match cur_token {
                 Some(ref token) => match token.token_type() {
                     TokenType::Literal | TokenType::Num | TokenType::Slash | TokenType::Dot => {
-                        ls_command.add_value(self.parse_path().unwrap());
+                        paths.push(self.parse_path().unwrap());
                     }
                     _ => break,
                 },
                 None => break,
             }
-            self.next_token();
+
+            // Skip the comma and get next path.
+            // If the current token isn't comma, then break the loop.
+            if self.cur_token.borrow().is_none()
+                || self.cur_token.borrow().clone().unwrap().token_type() != &TokenType::Comma
+            {
+                break;
+            } else {
+                self.next_token();
+            }
         }
 
-        ls_command
+        Some(paths)
     }
 
     // Parse the path of the command.
