@@ -107,13 +107,13 @@ impl Parser {
             }
         }
 
-        // Parse the values of the ls command.
+        // Parse the paths of the ls command.
         loop {
             let cur_token = self.cur_token.borrow().clone();
             match cur_token {
                 Some(ref token) => match token.token_type() {
-                    TokenType::Literal | TokenType::Num => {
-                        ls_command.add_value(token.literal().to_string());
+                    TokenType::Literal | TokenType::Num | TokenType::Slash | TokenType::Dot => {
+                        ls_command.add_value(self.parse_path().unwrap());
                     }
                     _ => break,
                 },
@@ -123,6 +123,37 @@ impl Parser {
         }
 
         ls_command
+    }
+
+    // Parse the path of the command.
+    fn parse_path(&self) -> Option<String> {
+        let cur_token = match self.cur_token.borrow().clone() {
+            Some(token) => token,
+            None => return None,
+        };
+
+        let mut path = String::from(cur_token.literal());
+        self.next_token();
+
+        loop {
+            let token = match self.cur_token.borrow().clone() {
+                Some(token) => token,
+                None => return Some(path),
+            };
+
+            if *token.token_type() == TokenType::Literal
+                || *token.token_type() == TokenType::Num
+                || *token.token_type() == TokenType::Slash
+                || *token.token_type() == TokenType::Dot
+            {
+                path.push_str(token.literal());
+                self.next_token();
+            } else {
+                break;
+            }
+        }
+
+        Some(path)
     }
 
     // Parse the parameters of the command.
@@ -171,7 +202,9 @@ impl Parser {
             None => return None,
         };
 
-        if *cur_token.token_type() == TokenType::Literal || *cur_token.token_type() == TokenType::Num {
+        if *cur_token.token_type() == TokenType::Literal
+            || *cur_token.token_type() == TokenType::Num
+        {
             let value = cur_token.literal().to_string();
             self.next_token();
 
