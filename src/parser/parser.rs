@@ -87,25 +87,14 @@ impl Parser {
         };
 
         self.next_token();
-
+        
         // Parse the parameters of the ls command.
-        loop {
-            let cur_token = self.cur_token.borrow().clone();
-            match cur_token {
-                Some(ref token) => match token.token_type() {
-                    TokenType::ShortParam | TokenType::LongParam => {
-                        match self.parse_params() {
-                            Some((param, value)) => {
-                                ls_command.set_option(param, value);
-                            }
-                            None => break,
-                        };
-                    }
-                    _ => break,
-                },
-                None => break,
+        match self.parse_params() {
+            Some(params) => {
+                ls_command.set_options(params);
             }
-        }
+            None => (),
+        };
 
         // Parse the paths of the ls command.
         match self.parse_paths() {
@@ -178,7 +167,33 @@ impl Parser {
     }
 
     // Parse the parameters of the command.
-    fn parse_params(&self) -> Option<(String, String)> {
+    fn parse_params(&self) -> Option<Vec<(String, String)>> {
+        let mut params: Vec<(String, String)> = Vec::new();
+
+        loop {
+            // If the current token isn't a parameter, then break the loop.
+            let cur_token = self.cur_token.borrow().clone();
+            match cur_token {
+                Some(ref token) => match token.token_type() {
+                    TokenType::ShortParam | TokenType::LongParam => {
+                        match self.parse_param() {
+                            Some((param, value)) => {
+                                params.push((param, value));
+                            }
+                            None => break,
+                        };
+                    }
+                    _ => break,
+                },
+                None => break,
+            }
+        }
+
+        Some(params)
+    }
+
+    // Parse the parameters of the command.
+    fn parse_param(&self) -> Option<(String, String)> {
         let cur_token = match self.cur_token.borrow().clone() {
             Some(token) => token,
             None => return None,
