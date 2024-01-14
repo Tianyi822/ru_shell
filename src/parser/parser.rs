@@ -87,16 +87,98 @@ impl Parser {
         };
 
         self.next_token();
-
+        
         // Parse the parameters of the ls command.
+        match self.parse_params() {
+            Some(params) => {
+                ls_command.set_options(params);
+            }
+            None => (),
+        };
+
+        // Parse the paths of the ls command.
+        match self.parse_paths() {
+            Some(paths) => ls_command.set_values(paths),
+            None => (),
+        };
+
+        ls_command
+    }
+
+    // Parse the paths of the command.
+    fn parse_paths(&self) -> Option<Vec<String>> {
+        let mut paths: Vec<String> = Vec::new();
+
         loop {
             let cur_token = self.cur_token.borrow().clone();
             match cur_token {
                 Some(ref token) => match token.token_type() {
+                    TokenType::Literal | TokenType::Num | TokenType::Slash | TokenType::Dot => {
+                        paths.push(self.parse_path().unwrap());
+                    }
+                    _ => break,
+                },
+                None => break,
+            }
+
+            // Skip the comma and get next path.
+            // If the current token isn't comma, then break the loop.
+            if self.cur_token.borrow().is_none()
+                || self.cur_token.borrow().clone().unwrap().token_type() != &TokenType::Comma
+            {
+                break;
+            } else {
+                self.next_token();
+            }
+        }
+
+        Some(paths)
+    }
+
+    // Parse the path of the command.
+    fn parse_path(&self) -> Option<String> {
+        let cur_token = match self.cur_token.borrow().clone() {
+            Some(token) => token,
+            None => return None,
+        };
+
+        let mut path = String::from(cur_token.literal());
+        self.next_token();
+
+        loop {
+            let token = match self.cur_token.borrow().clone() {
+                Some(token) => token,
+                None => return Some(path),
+            };
+
+            if *token.token_type() == TokenType::Literal
+                || *token.token_type() == TokenType::Num
+                || *token.token_type() == TokenType::Slash
+                || *token.token_type() == TokenType::Dot
+            {
+                path.push_str(token.literal());
+                self.next_token();
+            } else {
+                break;
+            }
+        }
+
+        Some(path)
+    }
+
+    // Parse the parameters of the command.
+    fn parse_params(&self) -> Option<Vec<(String, String)>> {
+        let mut params: Vec<(String, String)> = Vec::new();
+
+        loop {
+            // If the current token isn't a parameter, then break the loop.
+            let cur_token = self.cur_token.borrow().clone();
+            match cur_token {
+                Some(ref token) => match token.token_type() {
                     TokenType::ShortParam | TokenType::LongParam => {
-                        match self.parse_params() {
+                        match self.parse_param() {
                             Some((param, value)) => {
-                                ls_command.set_option(param, value);
+                                params.push((param, value));
                             }
                             None => break,
                         };
@@ -107,26 +189,11 @@ impl Parser {
             }
         }
 
-        // Parse the values of the ls command.
-        loop {
-            let cur_token = self.cur_token.borrow().clone();
-            match cur_token {
-                Some(ref token) => match token.token_type() {
-                    TokenType::Literal | TokenType::Num => {
-                        ls_command.add_value(token.literal().to_string());
-                    }
-                    _ => break,
-                },
-                None => break,
-            }
-            self.next_token();
-        }
-
-        ls_command
+        Some(params)
     }
 
     // Parse the parameters of the command.
-    fn parse_params(&self) -> Option<(String, String)> {
+    fn parse_param(&self) -> Option<(String, String)> {
         let cur_token = match self.cur_token.borrow().clone() {
             Some(token) => token,
             None => return None,
@@ -171,7 +238,9 @@ impl Parser {
             None => return None,
         };
 
-        if *cur_token.token_type() == TokenType::Literal || *cur_token.token_type() == TokenType::Num {
+        if *cur_token.token_type() == TokenType::Literal
+            || *cur_token.token_type() == TokenType::Num
+        {
             let value = cur_token.literal().to_string();
             self.next_token();
 
