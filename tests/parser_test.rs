@@ -10,10 +10,13 @@ mod parser_test {
         let mut command_ast: Vec<Box<dyn CommandAstNode>> = Vec::new();
 
         let mut ls_command = LsCommand::new(Token::new(TokenType::Ls, "ls".to_string()));
-        ls_command.set_option("-l".to_string(), "".to_string());
-        ls_command.set_option("-h".to_string(), "".to_string());
-        ls_command.set_option("--tree".to_string(), "".to_string());
-        ls_command.set_option("--depth".to_string(), "3".to_string());
+        ls_command.set_options(vec![
+            ("-l".to_string(), "".to_string()),
+            ("-h".to_string(), "".to_string()),
+            ("--tree".to_string(), "".to_string()),
+            ("--depth".to_string(), "3".to_string()),
+        ]);
+        ls_command.set_values(vec!["Programs/Rust/ru-shell".to_string()]);
 
         command_ast.push(Box::new(ls_command));
 
