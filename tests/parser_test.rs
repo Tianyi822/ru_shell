@@ -1,13 +1,13 @@
 #[cfg(test)]
 mod parser_test {
     use ru_shell::parser::ast::LsCommand;
-    use ru_shell::parser::CommandAstNode;
+    use ru_shell::parser::ExtCommandAstNode;
     use ru_shell::parser::parser::Parser;
     use ru_shell::token::token::{Token, TokenType};
 
     #[test]
     fn test_show_command() {
-        let mut command_ast: Vec<Box<dyn CommandAstNode>> = Vec::new();
+        let mut command_ast: Vec<Box<dyn ExtCommandAstNode>> = Vec::new();
 
         let mut ls_command = LsCommand::new(Token::new(TokenType::Ls, "ls".to_string()));
         ls_command.set_options(vec![
