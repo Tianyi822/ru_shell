@@ -25,8 +25,15 @@ mod parser_test {
 
     #[test]
     fn test_new_parser() {
-        let parser = Parser::new("ls -l -h --tree --depth 3 Programs/Rust/ru-shell,Programs/Rust/ru-shell");
+        let parser = Parser::new("ls -l -h --tree --depth 3 ~/Programs/Rust/ru-shell,Programs/Rust/ru-shell");
 
         println!("{:#?}", parser);
+    }
+
+    #[test]
+    fn test_cd_command_parse() {
+        let p = Parser::new("cd ~/Programs/Rust/ru-shell,Programs/Rust/ru-shell");
+
+        println!("{:#?}", p);
     }
 }
