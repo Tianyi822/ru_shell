@@ -8,7 +8,7 @@ pub trait CommandAstNode: std::fmt::Debug {
     fn name(&self) -> &str;
 
     // Set the command option.
-    fn set_option(&mut self, option: String, value: String);
+    fn set_options(&mut self, options: Vec<(String, String)>);
 
     // Get the command option.
     fn get_option(&self, option: &str) -> Option<&str>;
