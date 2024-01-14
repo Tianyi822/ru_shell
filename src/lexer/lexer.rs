@@ -143,7 +143,7 @@ impl Lexer {
 
                 // =============== Literal ===============
                 State::Literal => {
-                    if !(c.is_alphanumeric() || c.eq(&'_')) {
+                    if !(c.is_alphanumeric() || c.eq(&'_') || c.eq(&'-') || c.eq(&'/') || c.eq(&'.')) {
                         self.store_token_and_trans_state(index, c);
                     }
                 }
@@ -304,7 +304,13 @@ impl Lexer {
             'l' => *state = State::LsCommandState1,
             'c' => *state = State::CdCommandState1,
             '0'..='9' => *state = State::NumState,
-            '-' => *state = State::ParamState,
+            '-' => {
+                if *state == State::Start || *state == State::WhiteSpace {
+                    *state = State::ParamState;
+                } else {
+                    *state = State::Literal
+                }
+            },
             '|' => *state = State::PipeState,
             ',' => *state = State::CommaState,
             ';' => *state = State::SemicolonState,

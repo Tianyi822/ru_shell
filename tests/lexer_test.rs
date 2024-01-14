@@ -142,7 +142,7 @@ mod test {
 
     #[test]
     fn test_literal_tokens() {
-        let l = Lexer::new("a abc _abc _123 Abc_de 123_abc 123_A_b");
+        let l = Lexer::new("a abc _abc _123 Abc_de 123_abc 123_A_b ru-shell aa/bb/cc/.dd/ee_ff");
 
         let tokens = vec![
             Token::new(TokenType::Literal, "a".to_string()),
@@ -152,6 +152,8 @@ mod test {
             Token::new(TokenType::Literal, "Abc_de".to_string()),
             Token::new(TokenType::Literal, "123_abc".to_string()),
             Token::new(TokenType::Literal, "123_A_b".to_string()),
+            Token::new(TokenType::Literal, "ru-shell".to_string()),
+            Token::new(TokenType::Literal, "aa/bb/cc/.dd/ee_ff".to_string()),
             Token::new(TokenType::Eof, "".to_string()),
         ];
 
