@@ -2,10 +2,13 @@ use std::cell::RefCell;
 
 use crate::{
     lexer::lexer::Lexer,
-    token::{token::{Token, TokenType}, self},
+    token::token::{Token, TokenType},
 };
 
-use super::{ast::{LsCommand, CdCommand}, CommandAstNode};
+use super::{
+    ast::{CdCommand, LsCommand},
+    ExtCommandAstNode, Command,
+};
 
 // This parser is a recursive descent parser.
 // The AST was built by the priority of the operator that define in the token.
@@ -34,7 +37,7 @@ pub struct Parser {
     cur_token: RefCell<Option<Token>>,
 
     // The command AST that the parser will build.
-    command_ast: RefCell<Vec<Box<dyn CommandAstNode>>>,
+    command_ast: RefCell<Vec<Box<dyn Command>>>,
 }
 
 impl Parser {
@@ -59,7 +62,7 @@ impl Parser {
             let cur_token = self.cur_token.borrow().clone();
             // Parse the corresponding command based on the token type
             // and return the parsed AST (Abstract Syntax Tree) node.
-            let ast_node: Box<dyn CommandAstNode> = match cur_token {
+            let ast_node: Box<dyn Command> = match cur_token {
                 Some(ref token) => match token.token_type() {
                     TokenType::Ls => Box::new(self.parse_ls_command()), // Parse ls command.
                     TokenType::Cd => Box::new(self.parse_cd_command()), // Parse cd command.
@@ -74,7 +77,7 @@ impl Parser {
     }
 
     // Store the AST node.
-    fn store_ast_node(&self, ast_node: Box<dyn CommandAstNode>) {
+    fn store_ast_node(&self, ast_node: Box<dyn Command>) {
         let mut command_ast = self.command_ast.borrow_mut();
         command_ast.push(ast_node);
     }
@@ -114,7 +117,7 @@ impl Parser {
         };
 
         self.next_token();
-        
+
         // Parse the parameters of the ls command.
         match self.parse_params() {
             Some(params) => {
@@ -140,7 +143,11 @@ impl Parser {
             let cur_token = self.cur_token.borrow().clone();
             match cur_token {
                 Some(ref token) => match token.token_type() {
-                    TokenType::Tilde | TokenType::Literal | TokenType::Num | TokenType::Slash | TokenType::Dot => {
+                    TokenType::Tilde
+                    | TokenType::Literal
+                    | TokenType::Num
+                    | TokenType::Slash
+                    | TokenType::Dot => {
                         paths.push(self.parse_path().unwrap());
                     }
                     _ => break,
