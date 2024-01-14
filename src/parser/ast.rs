@@ -34,8 +34,8 @@ impl CommandAstNode for LsCommand {
         self.option.get(option).map(|s| s.as_str())
     }
 
-    fn add_value(&mut self, value: String) {
-        self.value.push(value)
+    fn set_values(&mut self, values: Vec<String>) {
+        self.value = values;   
     }
 }
 
@@ -68,8 +68,8 @@ impl CommandAstNode for CdCommand {
     fn get_option(&self, option: &str) -> Option<&str> {
         self.option.get(option).map(|s| s.as_str())
     }
-
-    fn add_value(&mut self, value: String) {
-        self.value.push(value)
+    
+    fn set_values(&mut self, values: Vec<String>) {
+        self.value = values;   
     }
 }
