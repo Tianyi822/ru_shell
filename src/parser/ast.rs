@@ -2,10 +2,11 @@ use std::collections::HashMap;
 
 use crate::token::token::Token;
 
-use super::{ExtCommandAstNode, Command};
+use super::{ExtCommandAstNode, Command, CommandType};
 
 #[derive(Debug)]
 pub struct LsCommand {
+    command_type: CommandType,
     token: Token,
     option: HashMap<String, String>,
     value: Vec<String>,
@@ -17,6 +18,7 @@ impl LsCommand {
             token,
             option: HashMap::new(),
             value: Vec::new(),
+            command_type: CommandType::ExtCommand,
         }
     }
 }
@@ -24,6 +26,10 @@ impl LsCommand {
 impl Command for LsCommand {
     fn name(&self) -> &str {
         self.token.literal()
+    }
+
+    fn get_type(&self) -> &CommandType {
+        &self.command_type
     }
 }
 
@@ -45,6 +51,7 @@ impl ExtCommandAstNode for LsCommand {
 
 #[derive(Debug)]
 pub struct CdCommand {
+    command_type: CommandType,
     token: Token,
     option: HashMap<String, String>,
     value: Vec<String>,
@@ -56,6 +63,7 @@ impl CdCommand {
             token,
             option: HashMap::new(),
             value: Vec::new(),
+            command_type: CommandType::ExtCommand,
         }
     }
 }
@@ -63,6 +71,10 @@ impl CdCommand {
 impl Command for CdCommand {
     fn name(&self) -> &str {
         self.token.literal()
+    }
+
+    fn get_type(&self) -> &CommandType {
+        &self.command_type
     }
 }
 
