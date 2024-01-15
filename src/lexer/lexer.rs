@@ -41,6 +41,11 @@ impl Lexer {
         l
     }
 
+    // Clear the lexer data.
+    pub fn clear(&self) {
+        self.tokens.borrow_mut().clear();
+    }
+
     // Iterate the tokens.
     pub fn next_token(&self) -> Option<Token> {
         let tokens = self.tokens.borrow();

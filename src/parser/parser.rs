@@ -56,6 +56,12 @@ impl Parser {
         parser
     }
 
+    // Clear the lexer and the command AST.
+    pub fn clear(&self) {
+        self.lexer.clear();
+        self.command_ast.borrow_mut().clear();
+    }
+
     // Parse the command and return the AST.
     fn parse_command(&self) {
         loop {
