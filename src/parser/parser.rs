@@ -62,6 +62,11 @@ impl Parser {
         self.command_ast.borrow_mut().clear();
     }
 
+    // Get the command AST by cloning.
+    pub fn command_ast(&self) -> Vec<Box<dyn Command>> {
+        self.command_ast.borrow().clone()
+    }
+
     // Parse the command and return the AST.
     fn parse_command(&self) {
         loop {
