@@ -1,7 +1,7 @@
 pub mod ast;
 pub mod parser;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum CommandType {
     ExtCommand,
     ChainCommand,
@@ -14,6 +14,14 @@ pub trait Command: std::fmt::Debug {
 
     // Get Command type.
     fn get_type(&self) -> &CommandType;
+
+    fn clone_box(&self) -> Box<dyn Command>;
+}
+
+impl Clone for Box<dyn Command> {
+    fn clone(&self) -> Box<dyn Command> {
+        self.clone_box()
+    }
 }
 
 // The CommandAstNode trait is used to define the common interface for the command AST node.

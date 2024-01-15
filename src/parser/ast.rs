@@ -4,7 +4,7 @@ use crate::token::token::Token;
 
 use super::{ExtCommandAstNode, Command, CommandType};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct LsCommand {
     command_type: CommandType,
     token: Token,
@@ -31,6 +31,10 @@ impl Command for LsCommand {
     fn get_type(&self) -> &CommandType {
         &self.command_type
     }
+
+    fn clone_box(&self) -> Box<dyn Command> {
+        Box::new(self.clone())
+    }
 }
 
 impl ExtCommandAstNode for LsCommand {
@@ -49,7 +53,7 @@ impl ExtCommandAstNode for LsCommand {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct CdCommand {
     command_type: CommandType,
     token: Token,
@@ -75,6 +79,10 @@ impl Command for CdCommand {
 
     fn get_type(&self) -> &CommandType {
         &self.command_type
+    }
+
+    fn clone_box(&self) -> Box<dyn Command> {
+        Box::new(self.clone())
     }
 }
 
