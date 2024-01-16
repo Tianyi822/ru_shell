@@ -1,7 +1,7 @@
 pub mod ast;
 pub mod parser;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum CommandType {
     ExtCommand,
     ChainCommand,
@@ -15,12 +15,16 @@ pub trait Command: std::fmt::Debug {
     // Get Command type.
     fn get_type(&self) -> &CommandType;
 
-    fn clone_box(&self) -> Box<dyn Command>;
+    // Clone the command to Box<dyn Command>.
+    fn clone_to_box(&self) -> Box<dyn Command>;
+
+    // Get the command as any.
+    fn as_any(&self) -> &dyn std::any::Any;
 }
 
 impl Clone for Box<dyn Command> {
     fn clone(&self) -> Box<dyn Command> {
-        self.clone_box()
+        self.clone_to_box()
     }
 }
 

@@ -1,8 +1,8 @@
 #[cfg(test)]
 mod parser_test {
-    use ru_shell::parser::ast::LsCommand;
-    use ru_shell::parser::ExtCommandAstNode;
+    use ru_shell::parser::ast::{CdCommand, LsCommand};
     use ru_shell::parser::parser::Parser;
+    use ru_shell::parser::{Command, ExtCommandAstNode};
     use ru_shell::token::token::{Token, TokenType};
 
     #[test]
@@ -25,15 +25,35 @@ mod parser_test {
 
     #[test]
     fn test_new_parser() {
-        let parser = Parser::new("ls -l -h --tree --depth 3 ~/Programs/Rust/ru-shell,Programs/Rust/ru-shell");
+        let parser = Parser::new(
+            "ls -l -h --tree --depth 3 ~/Programs/Rust/ru-shell,Programs/Rust/ru-shell",
+        );
 
-        println!("{:#?}", parser);
+        parser.iter().for_each(|command| {
+            let c = command.as_any().downcast_ref::<LsCommand>().unwrap();
+            assert_eq!(c.name(), "ls");
+            assert_eq!(
+                command.get_type(),
+                &ru_shell::parser::CommandType::ExtCommand
+            );
+            assert_eq!(c.get_option("-l"), Some(""));
+            assert_eq!(c.get_option("-h"), Some(""));
+            assert_eq!(c.get_option("--tree"), Some(""));
+            assert_eq!(c.get_option("--depth"), Some("3"));
+        });
     }
 
     #[test]
     fn test_cd_command_parse() {
-        let p = Parser::new("cd ~/Programs/Rust/ru-shell,Programs/Rust/ru-shell");
+        let parser = Parser::new("cd ~/Programs/Rust/ru-shell,Programs/Rust/ru-shell");
 
-        println!("{:#?}", p);
+        parser.iter().for_each(|command| {
+            let c = command.as_any().downcast_ref::<CdCommand>().unwrap();
+            assert_eq!(c.name(), "cd");
+            assert_eq!(
+                command.get_type(),
+                &ru_shell::parser::CommandType::ExtCommand
+            );
+        });
     }
 }

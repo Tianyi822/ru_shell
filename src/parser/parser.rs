@@ -7,7 +7,7 @@ use crate::{
 
 use super::{
     ast::{CdCommand, LsCommand},
-    ExtCommandAstNode, Command,
+    Command, ExtCommandAstNode,
 };
 
 // This parser is a recursive descent parser.
@@ -40,6 +40,29 @@ pub struct Parser {
     command_ast: RefCell<Vec<Box<dyn Command>>>,
 }
 
+pub struct ParserIterator<'a> {
+    parser: &'a Parser,
+    index: usize,
+}
+
+impl<'a> ParserIterator<'a> {
+    pub fn new(parser: &'a Parser) -> ParserIterator<'a> {
+        ParserIterator { parser, index: 0 }
+    }
+}
+
+impl<'a> Iterator for ParserIterator<'a> {
+    type Item = Box<dyn Command>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let command_ast = self.parser.command_ast.borrow();
+        let command = command_ast.get(self.index).cloned();
+        self.index += 1;
+
+        command
+    }
+}
+
 impl Parser {
     pub fn new(input: &str) -> Parser {
         let parser = Parser {
@@ -52,19 +75,20 @@ impl Parser {
         parser.next_token();
         // Start parsing and build the AST.
         parser.parse_command();
+        // Clear the lexer.
+        parser.lexer.clear();
 
         parser
     }
 
-    // Clear the lexer and the command AST.
-    pub fn clear(&self) {
-        self.lexer.clear();
-        self.command_ast.borrow_mut().clear();
+    // Get the iterator of the command AST.
+    pub fn iter(&self) -> ParserIterator {
+        ParserIterator::new(self)
     }
 
-    // Get the command AST by cloning.
-    pub fn command_ast(&self) -> Vec<Box<dyn Command>> {
-        self.command_ast.borrow().clone()
+    // Clear the lexer and the command AST.
+    pub fn clear(&self) {
+        self.command_ast.borrow_mut().clear();
     }
 
     // Parse the command and return the AST.
