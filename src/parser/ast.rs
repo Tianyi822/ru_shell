@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::token::token::Token;
 
-use super::{ExtCommandAstNode, Command, CommandType};
+use super::{ChainCommandAstNode, Command, CommandType, ExtCommandAstNode};
 
 #[derive(Debug, Clone)]
 pub struct LsCommand {
@@ -32,7 +32,7 @@ impl Command for LsCommand {
         &self.command_type
     }
 
-    fn clone_to_box(&self) -> Box<dyn Command> {
+    fn clone_cmd(&self) -> Box<dyn Command> {
         Box::new(self.clone())
     }
 
@@ -54,6 +54,10 @@ impl ExtCommandAstNode for LsCommand {
 
     fn set_values(&mut self, values: Vec<String>) {
         self.value = values;
+    }
+
+    fn clone_ext_cmd(&self) -> Box<dyn ExtCommandAstNode> {
+        Box::new(self.clone())
     }
 }
 
@@ -85,7 +89,7 @@ impl Command for CdCommand {
         &self.command_type
     }
 
-    fn clone_to_box(&self) -> Box<dyn Command> {
+    fn clone_cmd(&self) -> Box<dyn Command> {
         Box::new(self.clone())
     }
 
@@ -107,5 +111,60 @@ impl ExtCommandAstNode for CdCommand {
 
     fn set_values(&mut self, values: Vec<String>) {
         self.value = values;
+    }
+
+    fn clone_ext_cmd(&self) -> Box<dyn ExtCommandAstNode> {
+        Box::new(self.clone())
+    }
+}
+
+#[derive(Debug)]
+pub struct PipeCommand {
+    command_type: CommandType,
+    token: Token,
+    data_source: Box<dyn ExtCommandAstNode>,
+    data_destination: Box<dyn ExtCommandAstNode>,
+}
+
+impl Clone for PipeCommand {
+    fn clone(&self) -> Self {
+        Self {
+            command_type: self.command_type.clone(),
+            token: self.token.clone(),
+            data_source: self.data_source.clone(),
+            data_destination: self.data_destination.clone(),
+        }
+    }
+}
+
+impl Command for PipeCommand {
+    fn name(&self) -> &str {
+        self.token.literal()
+    }
+
+    fn get_type(&self) -> &CommandType {
+        &self.command_type
+    }
+
+    fn clone_cmd(&self) -> Box<dyn Command> {
+        Box::new(self.clone())
+    }
+
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
+}
+
+impl ChainCommandAstNode for PipeCommand {
+    fn set_source(&mut self, values: Box<dyn ExtCommandAstNode>) {
+        self.data_source = values;
+    }
+
+    fn set_destination(&mut self, values: Box<dyn ExtCommandAstNode>) {
+        self.data_destination = values;
+    }
+
+    fn clone_chain_cmd(&self) -> Box<dyn ChainCommandAstNode> {
+        Box::new(self.clone())
     }
 }
