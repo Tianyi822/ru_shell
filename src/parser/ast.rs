@@ -32,8 +32,12 @@ impl Command for LsCommand {
         &self.command_type
     }
 
-    fn clone_box(&self) -> Box<dyn Command> {
+    fn clone_to_box(&self) -> Box<dyn Command> {
         Box::new(self.clone())
+    }
+
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
     }
 }
 
@@ -81,8 +85,12 @@ impl Command for CdCommand {
         &self.command_type
     }
 
-    fn clone_box(&self) -> Box<dyn Command> {
+    fn clone_to_box(&self) -> Box<dyn Command> {
         Box::new(self.clone())
+    }
+
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
     }
 }
 
