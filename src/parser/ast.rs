@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::token::token::Token;
 
-use super::{ChainCommandAstNode, Command, CommandType, ExeCommandAstNode};
+use super::{Command, CommandType};
 
 #[derive(Debug, Clone)]
 pub struct LsCommand {
@@ -32,16 +32,6 @@ impl Command for LsCommand {
         &self.command_type
     }
 
-    fn clone_cmd(&self) -> Box<dyn Command> {
-        Box::new(self.clone())
-    }
-
-    fn as_any(&self) -> &dyn std::any::Any {
-        self
-    }
-}
-
-impl ExeCommandAstNode for LsCommand {
     fn set_options(&mut self, options: Vec<(String, String)>) {
         for (option, value) in options {
             self.option.insert(option, value);
@@ -56,7 +46,11 @@ impl ExeCommandAstNode for LsCommand {
         self.value = values;
     }
 
-    fn clone_ext_cmd(&self) -> Box<dyn ExeCommandAstNode> {
+    fn set_source(&mut self, _values: Option<Box<dyn Command>>) {}
+
+    fn set_destination(&mut self, _values: Option<Box<dyn Command>>) {}
+
+    fn clone_cmd(&self) -> Box<dyn Command> {
         Box::new(self.clone())
     }
 }
@@ -89,16 +83,6 @@ impl Command for CdCommand {
         &self.command_type
     }
 
-    fn clone_cmd(&self) -> Box<dyn Command> {
-        Box::new(self.clone())
-    }
-
-    fn as_any(&self) -> &dyn std::any::Any {
-        self
-    }
-}
-
-impl ExeCommandAstNode for CdCommand {
     fn set_options(&mut self, options: Vec<(String, String)>) {
         for (option, value) in options {
             self.option.insert(option, value);
@@ -109,11 +93,13 @@ impl ExeCommandAstNode for CdCommand {
         self.option.get(option).map(|s| s.as_str())
     }
 
-    fn set_values(&mut self, values: Vec<String>) {
-        self.value = values;
-    }
+    fn set_values(&mut self, _values: Vec<String>) {}
 
-    fn clone_ext_cmd(&self) -> Box<dyn ExeCommandAstNode> {
+    fn set_source(&mut self, _values: Option<Box<dyn Command>>) {}
+
+    fn set_destination(&mut self, _values: Option<Box<dyn Command>>) {}
+
+    fn clone_cmd(&self) -> Box<dyn Command> {
         Box::new(self.clone())
     }
 }
@@ -122,8 +108,8 @@ impl ExeCommandAstNode for CdCommand {
 pub struct PipeCommand {
     command_type: CommandType,
     token: Token,
-    data_source: Box<dyn ExeCommandAstNode>,
-    data_destination: Box<dyn ExeCommandAstNode>,
+    data_source: Box<dyn Command>,
+    data_destination: Box<dyn Command>,
 }
 
 impl Clone for PipeCommand {
@@ -146,25 +132,23 @@ impl Command for PipeCommand {
         &self.command_type
     }
 
-    fn clone_cmd(&self) -> Box<dyn Command> {
-        Box::new(self.clone())
+    fn set_options(&mut self, _options: Vec<(String, String)>) {}
+
+    fn get_option(&self, _option: &str) -> Option<&str> {
+        None
     }
 
-    fn as_any(&self) -> &dyn std::any::Any {
-        self
-    }
-}
+    fn set_values(&mut self, _values: Vec<String>) {}
 
-impl ChainCommandAstNode for PipeCommand {
-    fn set_source(&mut self, values: Box<dyn ExeCommandAstNode>) {
+    fn set_source(&mut self, values: Box<dyn Command>) {
         self.data_source = values;
     }
 
-    fn set_destination(&mut self, values: Box<dyn ExeCommandAstNode>) {
+    fn set_destination(&mut self, values: Box<dyn Command>) {
         self.data_destination = values;
     }
 
-    fn clone_chain_cmd(&self) -> Box<dyn ChainCommandAstNode> {
+    fn clone_cmd(&self) -> Box<dyn Command> {
         Box::new(self.clone())
     }
 }
