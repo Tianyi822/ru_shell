@@ -7,7 +7,7 @@ use crate::{
 
 use super::{
     ast::{CdCommand, LsCommand},
-    Command, ExtCommandAstNode,
+    Command, ExeCommandAstNode,
 };
 
 // This parser is a recursive descent parser.
