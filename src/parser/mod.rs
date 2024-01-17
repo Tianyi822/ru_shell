@@ -29,7 +29,7 @@ impl Clone for Box<dyn Command> {
 }
 
 // The CommandAstNode trait is used to define the common interface for the command AST node.
-pub trait ExtCommandAstNode: std::fmt::Debug + Command {
+pub trait ExeCommandAstNode: std::fmt::Debug + Command {
     // Set the command option.
     fn set_options(&mut self, options: Vec<(String, String)>);
 
@@ -40,23 +40,23 @@ pub trait ExtCommandAstNode: std::fmt::Debug + Command {
     fn set_values(&mut self, values: Vec<String>);
 
     // Clone the command to Box<dyn ExtCommandAstNode>.
-    fn clone_ext_cmd(&self) -> Box<dyn ExtCommandAstNode>;
+    fn clone_ext_cmd(&self) -> Box<dyn ExeCommandAstNode>;
 }
 
 
 // The CommandAstNode trait is used to define the common interface for the command AST node.
-impl Clone for Box<dyn ExtCommandAstNode> {
-    fn clone(&self) -> Box<dyn ExtCommandAstNode> {
+impl Clone for Box<dyn ExeCommandAstNode> {
+    fn clone(&self) -> Box<dyn ExeCommandAstNode> {
         self.clone_ext_cmd()
     }
 }
 
 pub trait ChainCommandAstNode: std::fmt::Debug + Command {
-    /// Set the data source from [`ExtCommandAstNode`].
-    fn set_source(&mut self, values: Box<dyn ExtCommandAstNode>);
+    /// Set the data source from [`ExeCommandAstNode`].
+    fn set_source(&mut self, values: Box<dyn ExeCommandAstNode>);
 
     // Set the data destination to [`CommandAstNode`].
-    fn set_destination(&mut self, values: Box<dyn ExtCommandAstNode>);
+    fn set_destination(&mut self, values: Box<dyn ExeCommandAstNode>);
 
     // Clone the command to Box<dyn ChainCommandAstNode>.
     fn clone_chain_cmd(&self) -> Box<dyn ChainCommandAstNode>;

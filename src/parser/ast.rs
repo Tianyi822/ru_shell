@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::token::token::Token;
 
-use super::{ChainCommandAstNode, Command, CommandType, ExtCommandAstNode};
+use super::{ChainCommandAstNode, Command, CommandType, ExeCommandAstNode};
 
 #[derive(Debug, Clone)]
 pub struct LsCommand {
@@ -41,7 +41,7 @@ impl Command for LsCommand {
     }
 }
 
-impl ExtCommandAstNode for LsCommand {
+impl ExeCommandAstNode for LsCommand {
     fn set_options(&mut self, options: Vec<(String, String)>) {
         for (option, value) in options {
             self.option.insert(option, value);
@@ -56,7 +56,7 @@ impl ExtCommandAstNode for LsCommand {
         self.value = values;
     }
 
-    fn clone_ext_cmd(&self) -> Box<dyn ExtCommandAstNode> {
+    fn clone_ext_cmd(&self) -> Box<dyn ExeCommandAstNode> {
         Box::new(self.clone())
     }
 }
@@ -98,7 +98,7 @@ impl Command for CdCommand {
     }
 }
 
-impl ExtCommandAstNode for CdCommand {
+impl ExeCommandAstNode for CdCommand {
     fn set_options(&mut self, options: Vec<(String, String)>) {
         for (option, value) in options {
             self.option.insert(option, value);
@@ -113,7 +113,7 @@ impl ExtCommandAstNode for CdCommand {
         self.value = values;
     }
 
-    fn clone_ext_cmd(&self) -> Box<dyn ExtCommandAstNode> {
+    fn clone_ext_cmd(&self) -> Box<dyn ExeCommandAstNode> {
         Box::new(self.clone())
     }
 }
@@ -122,8 +122,8 @@ impl ExtCommandAstNode for CdCommand {
 pub struct PipeCommand {
     command_type: CommandType,
     token: Token,
-    data_source: Box<dyn ExtCommandAstNode>,
-    data_destination: Box<dyn ExtCommandAstNode>,
+    data_source: Box<dyn ExeCommandAstNode>,
+    data_destination: Box<dyn ExeCommandAstNode>,
 }
 
 impl Clone for PipeCommand {
@@ -156,11 +156,11 @@ impl Command for PipeCommand {
 }
 
 impl ChainCommandAstNode for PipeCommand {
-    fn set_source(&mut self, values: Box<dyn ExtCommandAstNode>) {
+    fn set_source(&mut self, values: Box<dyn ExeCommandAstNode>) {
         self.data_source = values;
     }
 
-    fn set_destination(&mut self, values: Box<dyn ExtCommandAstNode>) {
+    fn set_destination(&mut self, values: Box<dyn ExeCommandAstNode>) {
         self.data_destination = values;
     }
 
