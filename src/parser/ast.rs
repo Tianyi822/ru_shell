@@ -9,7 +9,7 @@ pub struct LsCommand {
     command_type: CommandType,
     token: Token,
     option: HashMap<String, String>,
-    value: Vec<String>,
+    values: Vec<String>,
 }
 
 impl LsCommand {
@@ -17,7 +17,7 @@ impl LsCommand {
         LsCommand {
             token,
             option: HashMap::new(),
-            value: Vec::new(),
+            values: Vec::new(),
             command_type: CommandType::ExtCommand,
         }
     }
@@ -43,7 +43,7 @@ impl Command for LsCommand {
     }
 
     fn set_values(&mut self, values: Vec<String>) {
-        self.value = values;
+        self.values = values;
     }
 
     fn set_source(&mut self, _values: Option<Box<dyn Command>>) {}
@@ -60,7 +60,7 @@ pub struct CdCommand {
     command_type: CommandType,
     token: Token,
     option: HashMap<String, String>,
-    value: Vec<String>,
+    values: Vec<String>,
 }
 
 impl CdCommand {
@@ -68,7 +68,7 @@ impl CdCommand {
         CdCommand {
             token,
             option: HashMap::new(),
-            value: Vec::new(),
+            values: Vec::new(),
             command_type: CommandType::ExtCommand,
         }
     }
@@ -93,7 +93,9 @@ impl Command for CdCommand {
         self.option.get(option).map(|s| s.as_str())
     }
 
-    fn set_values(&mut self, _values: Vec<String>) {}
+    fn set_values(&mut self, values: Vec<String>) {
+        self.values = values;
+    }
 
     fn set_source(&mut self, _values: Option<Box<dyn Command>>) {}
 
@@ -140,12 +142,12 @@ impl Command for PipeCommand {
 
     fn set_values(&mut self, _values: Vec<String>) {}
 
-    fn set_source(&mut self, values: Box<dyn Command>) {
-        self.data_source = values;
+    fn set_source(&mut self, values: Option<Box<dyn Command>>) {
+        self.data_source = values.unwrap();
     }
 
-    fn set_destination(&mut self, values: Box<dyn Command>) {
-        self.data_destination = values;
+    fn set_destination(&mut self, values: Option<Box<dyn Command>>) {
+        self.data_destination = values.unwrap();
     }
 
     fn clone_cmd(&self) -> Box<dyn Command> {
