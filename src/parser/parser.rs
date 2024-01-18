@@ -6,14 +6,17 @@ use crate::{
 };
 
 use super::{
-    ast::{CdCommand, LsCommand},
+    ast::{ChainCommand, ExeCommand},
     Command,
 };
 
-// This parser is a recursive descent parser.
-// The AST was built by the priority of the operator that define in the token.
-// The higher priority operator will be built first.
-// For example, the command "ls -l | grep -i foo" will be built like this:
+// Since the syntax of command-line interfaces is simpler than that of programming languages,
+// this parser analyzes and processes in the order of tokens.
+// The only distinction to be made is between execution commands and chain commands.
+// Execution commands have corresponding execution results, such as ls, cd, cat, etc.
+// Chain commands are represented by pipe symbols and the like.
+// Depending on the type of command, the AST generated after parsing varies.
+//
 //     Pipe
 //    /    \
 //  Ls     Grep
@@ -21,13 +24,6 @@ use super::{
 //  -l     -i
 //          |
 //          foo
-// The logical of the parser is like this:
-// 1. Initialize the current token and the current priority.
-// 2. Read the current token and check the token type.
-// 3. If the token type is a command, then start to parse the command in parser_*_command() function.
-//
-// In the parser_*_command() function, the parser will parse the token by the grammar of the command.
-// If some errors occur, the parser will record the errors and stops parsing.
 #[derive(Debug)]
 pub struct Parser {
     // The lexer that will generate tokens.
@@ -74,7 +70,7 @@ impl Parser {
         // Initialize the current token.
         parser.next_token();
         // Start parsing and build the AST.
-        parser.parse_command();
+        parser.parse();
         // Clear the lexer.
         parser.lexer.clear();
 
@@ -92,17 +88,12 @@ impl Parser {
     }
 
     // Parse the command and return the AST.
-    fn parse_command(&self) {
+    fn parse(&self) {
         loop {
-            let cur_token = self.cur_token.borrow().clone();
             // Parse the corresponding command based on the token type
             // and return the parsed AST (Abstract Syntax Tree) node.
-            let ast_node: Box<dyn Command> = match cur_token {
-                Some(ref token) => match token.token_type() {
-                    TokenType::Ls => Box::new(self.parse_ls_command()), // Parse ls command.
-                    TokenType::Cd => Box::new(self.parse_cd_command()), // Parse cd command.
-                    _ => break,
-                },
+            let ast_node: Box<dyn Command> = match self.parse_exe_cmd() {
+                Some(ext_cmd) => ext_cmd,
                 None => break,
             };
             // Store the AST node and move to next token.
@@ -117,37 +108,56 @@ impl Parser {
         command_ast.push(ast_node);
     }
 
-    // Parse cd command
-    fn parse_cd_command(&self) -> CdCommand {
-        let mut cd_command = match self.cur_token.borrow().clone() {
-            Some(token) => CdCommand::new(token),
-            None => panic!("No token"),
+    // Parse the command whose type is execute command.
+    fn parse_exe_cmd(&self) -> Option<Box<dyn Command>> {
+        let cur_token = self.cur_token.borrow().clone();
+        // Parse the corresponding command based on the token type
+        // and return the parsed AST (Abstract Syntax Tree) node.
+        let ext_cmd: Option<Box<dyn Command>> = match cur_token {
+            Some(ref token) => match token.token_type() {
+                TokenType::Ls | TokenType::Cd => Some(self.parse_exe_command()),
+                _ => None,
+            },
+            None => None,
         };
 
-        self.next_token();
+        ext_cmd
+    }
 
-        // Parse the parameters of the cd command.
-        match self.parse_params() {
-            Some(params) => {
-                cd_command.set_options(params);
+    // Parse the command whose type is chain command.
+    fn parse_chain_cmd(&self) -> Option<Box<dyn Command>> {
+        if self.is_chain_token() {
+            let cur_token = self.cur_token.borrow().clone().unwrap();
+            let mut cmd = ChainCommand::new(cur_token);
+
+            // Set data destination of chain command.
+            let destination = self.parse_exe_cmd();
+            cmd.set_destination(destination);
+
+            return Some(Box::new(cmd));
+        }
+
+        None
+    }
+
+    // Judge current token if is chain token.
+    fn is_chain_token(&self) -> bool {
+        match self.cur_token.borrow().clone() {
+            Some(token) => {
+                if token.token_type() == &TokenType::Pipe {
+                    return true;
+                }
+                false
             }
-            None => (),
-        };
-
-        // Parse the paths of the cd command.
-        match self.parse_paths() {
-            Some(paths) => cd_command.set_values(paths),
-            None => (),
-        };
-
-        cd_command
+            None => false,
+        }
     }
 
     // Parse ls command
-    fn parse_ls_command(&self) -> LsCommand {
+    fn parse_exe_command(&self) -> Box<dyn Command> {
         // Build the ls command node.
-        let mut ls_command = match self.cur_token.borrow().clone() {
-            Some(token) => LsCommand::new(token),
+        let mut exe_command = match self.cur_token.borrow().clone() {
+            Some(token) => ExeCommand::new(token),
             None => panic!("No token"),
         };
 
@@ -156,18 +166,24 @@ impl Parser {
         // Parse the parameters of the ls command.
         match self.parse_params() {
             Some(params) => {
-                ls_command.set_options(params);
+                exe_command.set_options(params);
             }
             None => (),
         };
 
         // Parse the paths of the ls command.
         match self.parse_paths() {
-            Some(paths) => ls_command.set_values(paths),
+            Some(paths) => exe_command.set_values(paths),
             None => (),
         };
 
-        ls_command
+        match self.parse_chain_cmd() {
+            Some(mut token) => {
+                token.set_source(Some(Box::new(exe_command)));
+                return token;
+            }
+            None => return Box::new(exe_command),
+        }
     }
 
     // Parse the paths of the command.

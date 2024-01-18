@@ -74,18 +74,4 @@ impl Token {
     pub fn token_type(&self) -> &TokenType {
         &self.token_type
     }
-
-    pub fn priority(&self) -> u8 {
-        match self.token_type {
-            TokenType::Pipe => 5,
-            TokenType::Background => 5,
-            TokenType::Ls => 4,
-            TokenType::Cd => 4,
-            TokenType::ShortParam => 3,
-            TokenType::LongParam => 3,
-            TokenType::Assignment => 2,
-            TokenType::Literal => 1,
-            _ => 0,
-        }
-    }
 }

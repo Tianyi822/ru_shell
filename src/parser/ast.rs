@@ -5,16 +5,16 @@ use crate::token::token::Token;
 use super::{Command, CommandType};
 
 #[derive(Debug, Clone)]
-pub struct LsCommand {
+pub struct ExeCommand {
     command_type: CommandType,
     token: Token,
     option: HashMap<String, String>,
     values: Vec<String>,
 }
 
-impl LsCommand {
+impl ExeCommand {
     pub fn new(token: Token) -> Self {
-        LsCommand {
+        ExeCommand {
             token,
             option: HashMap::new(),
             values: Vec::new(),
@@ -23,58 +23,7 @@ impl LsCommand {
     }
 }
 
-impl Command for LsCommand {
-    fn name(&self) -> &str {
-        self.token.literal()
-    }
-
-    fn get_type(&self) -> &CommandType {
-        &self.command_type
-    }
-
-    fn set_options(&mut self, options: Vec<(String, String)>) {
-        for (option, value) in options {
-            self.option.insert(option, value);
-        }
-    }
-
-    fn get_option(&self, option: &str) -> Option<&str> {
-        self.option.get(option).map(|s| s.as_str())
-    }
-
-    fn set_values(&mut self, values: Vec<String>) {
-        self.values = values;
-    }
-
-    fn set_source(&mut self, _values: Option<Box<dyn Command>>) {}
-
-    fn set_destination(&mut self, _values: Option<Box<dyn Command>>) {}
-
-    fn clone_cmd(&self) -> Box<dyn Command> {
-        Box::new(self.clone())
-    }
-}
-
-#[derive(Debug, Clone)]
-pub struct CdCommand {
-    command_type: CommandType,
-    token: Token,
-    option: HashMap<String, String>,
-    values: Vec<String>,
-}
-
-impl CdCommand {
-    pub fn new(token: Token) -> Self {
-        CdCommand {
-            token,
-            option: HashMap::new(),
-            values: Vec::new(),
-            command_type: CommandType::ExtCommand,
-        }
-    }
-}
-
-impl Command for CdCommand {
+impl Command for ExeCommand {
     fn name(&self) -> &str {
         self.token.literal()
     }
@@ -107,14 +56,25 @@ impl Command for CdCommand {
 }
 
 #[derive(Debug)]
-pub struct PipeCommand {
+pub struct ChainCommand {
     command_type: CommandType,
     token: Token,
-    data_source: Box<dyn Command>,
-    data_destination: Box<dyn Command>,
+    data_source: Option<Box<dyn Command>>,
+    data_destination: Option<Box<dyn Command>>,
 }
 
-impl Clone for PipeCommand {
+impl ChainCommand {
+    pub fn new(token: Token) -> Self {
+        ChainCommand {
+            token,
+            command_type: CommandType::ChainCommand,
+            data_source: None,
+            data_destination: None,
+        }
+    }
+}
+
+impl Clone for ChainCommand {
     fn clone(&self) -> Self {
         Self {
             command_type: self.command_type.clone(),
@@ -125,7 +85,7 @@ impl Clone for PipeCommand {
     }
 }
 
-impl Command for PipeCommand {
+impl Command for ChainCommand {
     fn name(&self) -> &str {
         self.token.literal()
     }
@@ -143,11 +103,11 @@ impl Command for PipeCommand {
     fn set_values(&mut self, _values: Vec<String>) {}
 
     fn set_source(&mut self, values: Option<Box<dyn Command>>) {
-        self.data_source = values.unwrap();
+        self.data_source = values;
     }
 
     fn set_destination(&mut self, values: Option<Box<dyn Command>>) {
-        self.data_destination = values.unwrap();
+        self.data_destination = values;
     }
 
     fn clone_cmd(&self) -> Box<dyn Command> {
