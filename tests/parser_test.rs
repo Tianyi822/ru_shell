@@ -54,4 +54,11 @@ mod parser_test {
             );
         });
     }
+
+    #[test]
+    fn test_chain_command_parse() {
+        let parser = Parser::new("ls -l -h | cd");
+
+        println!("{:#?}", parser);
+    }
 }

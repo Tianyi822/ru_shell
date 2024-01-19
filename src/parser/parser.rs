@@ -130,6 +130,8 @@ impl Parser {
             let cur_token = self.cur_token.borrow().clone().unwrap();
             let mut cmd = ChainCommand::new(cur_token);
 
+            // Move to next Token to parse
+            self.next_token();
             // Set data destination of chain command.
             let destination = self.parse_exe_cmd();
             cmd.set_destination(destination);
