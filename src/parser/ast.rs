@@ -53,6 +53,14 @@ impl Command for ExeCommand {
     fn clone_cmd(&self) -> Box<dyn Command> {
         Box::new(self.clone())
     }
+
+    fn get_source(&self) -> Option<Box<dyn Command>> {
+        None
+    }
+
+    fn get_destination(&self) -> Option<Box<dyn Command>> {
+        None
+    }
 }
 
 #[derive(Debug)]
@@ -112,5 +120,13 @@ impl Command for ChainCommand {
 
     fn clone_cmd(&self) -> Box<dyn Command> {
         Box::new(self.clone())
+    }
+
+    fn get_source(&self) -> Option<Box<dyn Command>> {
+        self.data_source.clone()
+    }
+
+    fn get_destination(&self) -> Option<Box<dyn Command>> {
+        self.data_destination.clone()
     }
 }

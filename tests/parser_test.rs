@@ -57,8 +57,18 @@ mod parser_test {
 
     #[test]
     fn test_chain_command_parse() {
-        let parser = Parser::new("ls -l -h | cd");
+        let parser = Parser::new("ls -l -h | cd | ls --tree --depth=3");
+        
+        let cmd = parser.iter().next().unwrap();
+        assert_eq!(cmd.get_type(), &ru_shell::parser::CommandType::ChainCommand);
+        assert_eq!(cmd.name(), "|");
+        assert_eq!(cmd.get_source().unwrap().name(), "ls");
+        assert_eq!(cmd.get_destination().unwrap().name(), "|");
 
-        println!("{:#?}", parser);
+        let cmd2 = cmd.get_destination().unwrap();
+        assert_eq!(cmd2.get_source().unwrap().name(), "cd");
+        assert_eq!(cmd2.get_destination().unwrap().name(), "ls");
+        assert_eq!(cmd2.get_destination().unwrap().get_option("--tree"), Some(""));
+        assert_eq!(cmd2.get_destination().unwrap().get_option("--depth"), Some("3"));
     }
 }

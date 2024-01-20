@@ -35,8 +35,14 @@ pub trait Command: std::fmt::Debug {
     /// Set the data source from the command whose type is [`ExtCommand`].
     fn set_source(&mut self, values: Option<Box<dyn Command>>);
 
+    /// Get the data source.
+    fn get_source(&self) -> Option<Box<dyn Command>>;
+
     /// Set the data destination to the next execute command.
     fn set_destination(&mut self, values: Option<Box<dyn Command>>);
+
+    /// Get the data destination.
+    fn get_destination(&self) -> Option<Box<dyn Command>>;
 
     // Clone the command to Box<dyn Command>.
     fn clone_cmd(&self) -> Box<dyn Command>;
