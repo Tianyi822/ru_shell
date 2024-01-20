@@ -48,18 +48,18 @@ impl Command for ExeCommand {
 
     fn set_source(&mut self, _values: Option<Box<dyn Command>>) {}
 
-    fn set_destination(&mut self, _values: Option<Box<dyn Command>>) {}
-
-    fn clone_cmd(&self) -> Box<dyn Command> {
-        Box::new(self.clone())
-    }
-
     fn get_source(&self) -> Option<Box<dyn Command>> {
         None
     }
 
+    fn set_destination(&mut self, _values: Option<Box<dyn Command>>) {}
+
     fn get_destination(&self) -> Option<Box<dyn Command>> {
         None
+    }
+
+    fn clone_cmd(&self) -> Box<dyn Command> {
+        Box::new(self.clone())
     }
 }
 
@@ -114,19 +114,19 @@ impl Command for ChainCommand {
         self.data_source = values;
     }
 
-    fn set_destination(&mut self, values: Option<Box<dyn Command>>) {
-        self.data_destination = values;
-    }
-
-    fn clone_cmd(&self) -> Box<dyn Command> {
-        Box::new(self.clone())
-    }
-
     fn get_source(&self) -> Option<Box<dyn Command>> {
         self.data_source.clone()
     }
 
+    fn set_destination(&mut self, values: Option<Box<dyn Command>>) {
+        self.data_destination = values;
+    }
+
     fn get_destination(&self) -> Option<Box<dyn Command>> {
         self.data_destination.clone()
+    }
+
+    fn clone_cmd(&self) -> Box<dyn Command> {
+        Box::new(self.clone())
     }
 }
