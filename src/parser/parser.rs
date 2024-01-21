@@ -6,8 +6,8 @@ use crate::{
 };
 
 use super::{
-    ast::{ChainCommand, ExeCommand},
-    Command,
+    ast::{ChainCommandAstNode, ExeCommandAstNode},
+    CommandAstNode,
 };
 
 // Since the syntax of command-line interfaces is simpler than that of programming languages,
@@ -33,7 +33,7 @@ pub struct Parser {
     cur_token: RefCell<Option<Token>>,
 
     // The command AST that the parser will build.
-    command_ast: RefCell<Vec<Box<dyn Command>>>,
+    command_ast: RefCell<Vec<Box<dyn CommandAstNode>>>,
 }
 
 pub struct ParserIterator<'a> {
@@ -48,7 +48,7 @@ impl<'a> ParserIterator<'a> {
 }
 
 impl<'a> Iterator for ParserIterator<'a> {
-    type Item = Box<dyn Command>;
+    type Item = Box<dyn CommandAstNode>;
 
     fn next(&mut self) -> Option<Self::Item> {
         let command_ast = self.parser.command_ast.borrow();
@@ -92,7 +92,7 @@ impl Parser {
         loop {
             // Parse the corresponding command based on the token type
             // and return the parsed AST (Abstract Syntax Tree) node.
-            let ast_node: Box<dyn Command> = match self.parse_exe_cmd() {
+            let ast_node: Box<dyn CommandAstNode> = match self.parse_exe_cmd() {
                 Some(ext_cmd) => ext_cmd,
                 None => break,
             };
@@ -103,17 +103,17 @@ impl Parser {
     }
 
     // Store the AST node.
-    fn store_ast_node(&self, ast_node: Box<dyn Command>) {
+    fn store_ast_node(&self, ast_node: Box<dyn CommandAstNode>) {
         let mut command_ast = self.command_ast.borrow_mut();
         command_ast.push(ast_node);
     }
 
     // Parse the command whose type is execute command.
-    fn parse_exe_cmd(&self) -> Option<Box<dyn Command>> {
+    fn parse_exe_cmd(&self) -> Option<Box<dyn CommandAstNode>> {
         let cur_token = self.cur_token.borrow().clone();
         // Parse the corresponding command based on the token type
         // and return the parsed AST (Abstract Syntax Tree) node.
-        let ext_cmd: Option<Box<dyn Command>> = match cur_token {
+        let ext_cmd: Option<Box<dyn CommandAstNode>> = match cur_token {
             Some(ref token) => match token.token_type() {
                 TokenType::Ls | TokenType::Cd => Some(self.parse_exe_command()),
                 _ => None,
@@ -125,10 +125,10 @@ impl Parser {
     }
 
     // Parse the command whose type is chain command.
-    fn parse_chain_cmd(&self) -> Option<Box<dyn Command>> {
+    fn parse_chain_cmd(&self) -> Option<Box<dyn CommandAstNode>> {
         if self.is_chain_token() {
             let cur_token = self.cur_token.borrow().clone().unwrap();
-            let mut cmd = ChainCommand::new(cur_token);
+            let mut cmd = ChainCommandAstNode::new(cur_token);
 
             // Move to next Token to parse
             self.next_token();
@@ -156,10 +156,10 @@ impl Parser {
     }
 
     // Parse ls command
-    fn parse_exe_command(&self) -> Box<dyn Command> {
+    fn parse_exe_command(&self) -> Box<dyn CommandAstNode> {
         // Build the ls command node.
         let mut exe_command = match self.cur_token.borrow().clone() {
-            Some(token) => ExeCommand::new(token),
+            Some(token) => ExeCommandAstNode::new(token),
             None => panic!("No token"),
         };
 

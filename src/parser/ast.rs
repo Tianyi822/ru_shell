@@ -2,19 +2,19 @@ use std::collections::HashMap;
 
 use crate::token::token::Token;
 
-use super::{Command, CommandType};
+use super::{CommandAstNode, CommandType};
 
 #[derive(Debug, Clone)]
-pub struct ExeCommand {
+pub struct ExeCommandAstNode {
     command_type: CommandType,
     token: Token,
     option: HashMap<String, String>,
     values: Vec<String>,
 }
 
-impl ExeCommand {
+impl ExeCommandAstNode {
     pub fn new(token: Token) -> Self {
-        ExeCommand {
+        ExeCommandAstNode {
             token,
             option: HashMap::new(),
             values: Vec::new(),
@@ -23,7 +23,7 @@ impl ExeCommand {
     }
 }
 
-impl Command for ExeCommand {
+impl CommandAstNode for ExeCommandAstNode {
     fn name(&self) -> &str {
         self.token.literal()
     }
@@ -46,34 +46,34 @@ impl Command for ExeCommand {
         self.values = values;
     }
 
-    fn set_source(&mut self, _values: Option<Box<dyn Command>>) {}
+    fn set_source(&mut self, _values: Option<Box<dyn CommandAstNode>>) {}
 
-    fn get_source(&self) -> Option<Box<dyn Command>> {
+    fn get_source(&self) -> Option<Box<dyn CommandAstNode>> {
         None
     }
 
-    fn set_destination(&mut self, _values: Option<Box<dyn Command>>) {}
+    fn set_destination(&mut self, _values: Option<Box<dyn CommandAstNode>>) {}
 
-    fn get_destination(&self) -> Option<Box<dyn Command>> {
+    fn get_destination(&self) -> Option<Box<dyn CommandAstNode>> {
         None
     }
 
-    fn clone_cmd(&self) -> Box<dyn Command> {
+    fn clone_cmd(&self) -> Box<dyn CommandAstNode> {
         Box::new(self.clone())
     }
 }
 
 #[derive(Debug)]
-pub struct ChainCommand {
+pub struct ChainCommandAstNode {
     command_type: CommandType,
     token: Token,
-    data_source: Option<Box<dyn Command>>,
-    data_destination: Option<Box<dyn Command>>,
+    data_source: Option<Box<dyn CommandAstNode>>,
+    data_destination: Option<Box<dyn CommandAstNode>>,
 }
 
-impl ChainCommand {
+impl ChainCommandAstNode {
     pub fn new(token: Token) -> Self {
-        ChainCommand {
+        ChainCommandAstNode {
             token,
             command_type: CommandType::ChainCommand,
             data_source: None,
@@ -82,7 +82,7 @@ impl ChainCommand {
     }
 }
 
-impl Clone for ChainCommand {
+impl Clone for ChainCommandAstNode {
     fn clone(&self) -> Self {
         Self {
             command_type: self.command_type.clone(),
@@ -93,7 +93,7 @@ impl Clone for ChainCommand {
     }
 }
 
-impl Command for ChainCommand {
+impl CommandAstNode for ChainCommandAstNode {
     fn name(&self) -> &str {
         self.token.literal()
     }
@@ -110,23 +110,23 @@ impl Command for ChainCommand {
 
     fn set_values(&mut self, _values: Vec<String>) {}
 
-    fn set_source(&mut self, values: Option<Box<dyn Command>>) {
+    fn set_source(&mut self, values: Option<Box<dyn CommandAstNode>>) {
         self.data_source = values;
     }
 
-    fn get_source(&self) -> Option<Box<dyn Command>> {
+    fn get_source(&self) -> Option<Box<dyn CommandAstNode>> {
         self.data_source.clone()
     }
 
-    fn set_destination(&mut self, values: Option<Box<dyn Command>>) {
+    fn set_destination(&mut self, values: Option<Box<dyn CommandAstNode>>) {
         self.data_destination = values;
     }
 
-    fn get_destination(&self) -> Option<Box<dyn Command>> {
+    fn get_destination(&self) -> Option<Box<dyn CommandAstNode>> {
         self.data_destination.clone()
     }
 
-    fn clone_cmd(&self) -> Box<dyn Command> {
+    fn clone_cmd(&self) -> Box<dyn CommandAstNode> {
         Box::new(self.clone())
     }
 }

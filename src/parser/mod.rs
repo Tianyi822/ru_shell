@@ -8,7 +8,7 @@ pub enum CommandType {
 }
 
 // This trait is used to define the command,
-pub trait Command: std::fmt::Debug {
+pub trait CommandAstNode: std::fmt::Debug {
     // Get the command name.
     fn name(&self) -> &str;
 
@@ -33,23 +33,23 @@ pub trait Command: std::fmt::Debug {
     /// are used to set the data source and data destination for a chain command.
 
     /// Set the data source from the command whose type is [`ExtCommand`].
-    fn set_source(&mut self, values: Option<Box<dyn Command>>);
+    fn set_source(&mut self, values: Option<Box<dyn CommandAstNode>>);
 
     /// Get the data source.
-    fn get_source(&self) -> Option<Box<dyn Command>>;
+    fn get_source(&self) -> Option<Box<dyn CommandAstNode>>;
 
     /// Set the data destination to the next execute command.
-    fn set_destination(&mut self, values: Option<Box<dyn Command>>);
+    fn set_destination(&mut self, values: Option<Box<dyn CommandAstNode>>);
 
     /// Get the data destination.
-    fn get_destination(&self) -> Option<Box<dyn Command>>;
+    fn get_destination(&self) -> Option<Box<dyn CommandAstNode>>;
 
     // Clone the command to Box<dyn Command>.
-    fn clone_cmd(&self) -> Box<dyn Command>;
+    fn clone_cmd(&self) -> Box<dyn CommandAstNode>;
 }
 
-impl Clone for Box<dyn Command> {
-    fn clone(&self) -> Box<dyn Command> {
+impl Clone for Box<dyn CommandAstNode> {
+    fn clone(&self) -> Box<dyn CommandAstNode> {
         self.clone_cmd()
     }
 }
