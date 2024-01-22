@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::token::token::Token;
+use crate::token::token::{Token, TokenType};
 
 use super::{CommandAstNode, CommandType};
 
@@ -9,7 +9,7 @@ pub struct ExeCommandAstNode {
     command_type: CommandType,
     token: Token,
     option: HashMap<String, String>,
-    values: Vec<String>,
+    values: Option<Vec<String>>,
 }
 
 impl ExeCommandAstNode {
@@ -17,18 +17,18 @@ impl ExeCommandAstNode {
         ExeCommandAstNode {
             token,
             option: HashMap::new(),
-            values: Vec::new(),
+            values: None,
             command_type: CommandType::ExtCommand,
         }
     }
 }
 
 impl CommandAstNode for ExeCommandAstNode {
-    fn name(&self) -> &str {
-        self.token.literal()
+    fn token_type(&self) -> &TokenType {
+        self.token.token_type()
     }
 
-    fn get_type(&self) -> &CommandType {
+    fn cmd_type(&self) -> &CommandType {
         &self.command_type
     }
 
@@ -43,7 +43,11 @@ impl CommandAstNode for ExeCommandAstNode {
     }
 
     fn set_values(&mut self, values: Vec<String>) {
-        self.values = values;
+        self.values = Some(values);
+    }
+
+    fn get_values(&self) -> Option<Vec<String>> {
+        self.values.clone()
     }
 
     fn set_source(&mut self, _values: Option<Box<dyn CommandAstNode>>) {}
@@ -94,11 +98,11 @@ impl Clone for ChainCommandAstNode {
 }
 
 impl CommandAstNode for ChainCommandAstNode {
-    fn name(&self) -> &str {
-        self.token.literal()
+    fn token_type(&self) -> &TokenType {
+        self.token.token_type()
     }
 
-    fn get_type(&self) -> &CommandType {
+    fn cmd_type(&self) -> &CommandType {
         &self.command_type
     }
 
@@ -109,6 +113,10 @@ impl CommandAstNode for ChainCommandAstNode {
     }
 
     fn set_values(&mut self, _values: Vec<String>) {}
+
+    fn get_values(&self) -> Option<Vec<String>> {
+        None
+    }
 
     fn set_source(&mut self, values: Option<Box<dyn CommandAstNode>>) {
         self.data_source = values;
