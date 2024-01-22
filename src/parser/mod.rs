@@ -27,8 +27,11 @@ pub trait CommandAstNode: std::fmt::Debug {
     // Get the command option.
     fn get_option(&self, option: &str) -> Option<&str>;
 
-    // Add the command value.
+    // Add the command values.
     fn set_values(&mut self, values: Vec<String>);
+
+    // Get the command values.
+    fn get_values(&self) -> Option<Vec<String>>;
 
     /// Only commands of the [`ChainCommand`] type have a data source and a data destination.
     /// The following functions: [`set_source`] and [`set_destination`]
