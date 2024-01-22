@@ -1,3 +1,5 @@
+use crate::token::token::TokenType;
+
 pub mod ast;
 pub mod parser;
 
@@ -9,11 +11,11 @@ pub enum CommandType {
 
 // This trait is used to define the command,
 pub trait CommandAstNode: std::fmt::Debug {
-    // Get the command name.
-    fn name(&self) -> &str;
+    // Get the command token type.
+    fn token_type(&self) -> &TokenType;
 
     // Get Command type.
-    fn get_type(&self) -> &CommandType;
+    fn cmd_type(&self) -> &CommandType;
 
     /// Only commands of the [`ExtCommand`] type have options and values.
     /// The following functions: [`set_options`], [`get_option`], [`set_values`], and [`clone_ext_cmd`]

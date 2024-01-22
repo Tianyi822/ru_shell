@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::token::token::Token;
+use crate::token::token::{Token, TokenType};
 
 use super::{CommandAstNode, CommandType};
 
@@ -24,11 +24,11 @@ impl ExeCommandAstNode {
 }
 
 impl CommandAstNode for ExeCommandAstNode {
-    fn name(&self) -> &str {
-        self.token.literal()
+    fn token_type(&self) -> &TokenType {
+        self.token.token_type()
     }
 
-    fn get_type(&self) -> &CommandType {
+    fn cmd_type(&self) -> &CommandType {
         &self.command_type
     }
 
@@ -94,11 +94,11 @@ impl Clone for ChainCommandAstNode {
 }
 
 impl CommandAstNode for ChainCommandAstNode {
-    fn name(&self) -> &str {
-        self.token.literal()
+    fn token_type(&self) -> &TokenType {
+        self.token.token_type()
     }
 
-    fn get_type(&self) -> &CommandType {
+    fn cmd_type(&self) -> &CommandType {
         &self.command_type
     }
 
