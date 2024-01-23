@@ -33,6 +33,7 @@ struct FileInfo {
     is_hidden: bool,
 }
 
+#[derive(Debug)]
 // Ls command
 pub struct LsCmd {
     // show details of files and directories
