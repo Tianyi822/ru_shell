@@ -1,7 +1,7 @@
-use crate::executor::Command;
 use crate::executor::ls::LsCmd;
+use crate::executor::Command;
+use crate::parser::parser::Parser;
 use crate::parser::{CommandAstNode, CommandType};
-use crate::parser::parser::ParserIterator;
 use crate::token::token::TokenType;
 
 // This executor obtains the commands to be executed
@@ -16,15 +16,28 @@ pub struct Executor {
 
 impl Executor {
     // Create new Executor
-    pub fn new(parser_iter: ParserIterator) -> Self {
+    pub fn new(cmd: &str) -> Self {
         let mut executor = Self { cmds: Vec::new() };
 
+        // Create new Parser
+        let parser = Parser::new(cmd);
+
         // Analyze the AST and save the command into an array
-        for cmd in parser_iter {
+        for cmd in parser.iter() {
             executor.add_cmd(cmd);
         }
 
+        // Clear the Parser data
+        parser.clear();
+
         executor
+    }
+
+    // Execute all commands
+    pub fn execute(&mut self) {
+        for cmd in self.cmds.iter_mut() {
+            cmd.execute();
+        }
     }
 
     // Add command to cmds that was analyzed
