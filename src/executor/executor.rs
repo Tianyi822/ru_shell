@@ -1,7 +1,7 @@
-use crate::executor::ls::LsCmd;
 use crate::executor::Command;
-use crate::parser::parser::Parser;
+use crate::executor::ls::LsCmd;
 use crate::parser::{CommandAstNode, CommandType};
+use crate::parser::parser::Parser;
 use crate::token::token::TokenType;
 
 // This executor obtains the commands to be executed
@@ -9,6 +9,7 @@ use crate::token::token::TokenType;
 // saves the parsing results into an array,
 // and executes them in sequence immediately
 // after completing the parsing of all AST nodes.
+#[derive(Debug)]
 pub struct Executor {
     // Commands to be executed
     cmds: Vec<Box<dyn Command>>,
@@ -38,6 +39,11 @@ impl Executor {
         for cmd in self.cmds.iter_mut() {
             cmd.execute();
         }
+    }
+
+    // Get cmds that was analyzed
+    pub fn get_cmds(&self) -> &Vec<Box<dyn Command>> {
+        &self.cmds
     }
 
     // Add command to cmds that was analyzed
