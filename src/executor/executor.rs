@@ -33,6 +33,13 @@ impl Executor {
         executor
     }
 
+    // Execute all commands
+    pub fn execute(&mut self) {
+        for cmd in self.cmds.iter_mut() {
+            cmd.execute();
+        }
+    }
+
     // Add command to cmds that was analyzed
     pub fn add_cmd(&mut self, cmd: Box<dyn CommandAstNode>) {
         let cmd = match cmd.cmd_type() {
