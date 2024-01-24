@@ -35,8 +35,8 @@ impl Executor {
     }
 
     // Execute all commands
-    pub fn execute(&mut self) {
-        for cmd in self.cmds.iter_mut() {
+    pub fn execute(&self) {
+        for cmd in self.cmds.iter() {
             cmd.execute();
         }
     }

@@ -167,9 +167,6 @@ impl LsCmd {
     #[cfg(unix)]
     fn get_file_info(&self, path_buf: &std::path::PathBuf) -> FileInfo {
         // Get file metadata, include file size, modified time, etc.
-
-        use std::os::unix::fs::MetadataExt;
-
         use chrono::{DateTime, Local};
         let metadata = match fs::symlink_metadata(path_buf) {
             Ok(metadata) => metadata,
@@ -315,6 +312,31 @@ impl LsCmd {
 
         result
     }
+
+    // Just print files and dirs name in the path
+    #[cfg(unix)]
+    fn get_files_and_dirs(&self, path_buf: &PathBuf, files: &mut Vec<FileInfo>) {
+        // Check if the path is a file.
+        if !path_buf.is_dir() {
+            // If it is a file, just get file info and return.
+            files.push(self.get_file_info(path_buf));
+            return;
+        } else {
+            // If it is a directory, get all files and directories in it.
+            // And store them to the vec.
+            let paths = match fs::read_dir(path_buf) {
+                Ok(paths) => paths,
+                Err(_) => {
+                    let msg = format!("Error: Permission denied").red();
+                    panic!("{}", msg);
+                }
+            };
+            for path in paths {
+                let path = path.unwrap().path();
+                files.push(self.get_file_info(&path));
+            }
+        }
+    }
 }
 
 impl From<Box<dyn CommandAstNode>> for LsCmd {
@@ -326,6 +348,10 @@ impl From<Box<dyn CommandAstNode>> for LsCmd {
             Some(values) => values.into_iter().map(PathBuf::from).collect(),
             None => Vec::new(),
         };
+        // Set paths default value
+        if ls_cmd.paths.is_empty() {
+            ls_cmd.paths.push(PathBuf::from("./"))
+        }
 
         // Get the 'long' option
         match cmd.get_option("-l").or(cmd.get_option("--long")) {
@@ -371,7 +397,13 @@ impl From<Box<dyn CommandAstNode>> for LsCmd {
 }
 
 impl Command for LsCmd {
-    fn execute(&mut self) {
-        todo!()
+    fn execute(&self) {
+        self.paths.iter().for_each(|path| {
+            let mut files = Vec::new();
+            self.get_files_and_dirs(path, &mut files);
+
+            println!("=========================");
+            println!("{:#?}", files);
+        });
     }
 }
