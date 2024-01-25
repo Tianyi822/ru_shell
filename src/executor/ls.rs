@@ -45,6 +45,12 @@ pub struct LsCmd {
     // show human readable file sizes
     human_readable: bool,
 
+    // sort by file size
+    sort_by_size: bool,
+
+    // sort by modified time
+    sort_by_time: bool,
+
     // reverse sort
     resort: bool,
 
@@ -80,6 +86,8 @@ impl LsCmd {
             long: false,
             all: false,
             human_readable: false,
+            sort_by_size: false,
+            sort_by_time: false,
             resort: false,
             tree: false,
             depth: 10,
@@ -336,6 +344,20 @@ impl LsCmd {
                 files.push(self.get_file_info(&path));
             }
         }
+
+        // Sort by option
+        if self.sort_by_size {
+            files.sort_by(|f1, f2| f1.size.cmp(&f2.size));
+        } else if self.sort_by_time {
+            files.sort_by(|f1, f2: &FileInfo| f1.modified_time.cmp(&f2.modified_time));
+        } else {
+            files.sort_by(|f1, f2| f1.name.cmp(&f2.name));
+        }
+
+        // Reverse sort if get '-r' option.
+        if self.resort {
+            files.reverse();
+        }
     }
 }
 
@@ -382,6 +404,16 @@ impl From<Box<dyn CommandAstNode>> for LsCmd {
         match cmd.get_option("-r").or(cmd.get_option("--resort")) {
             Some(_) => ls_cmd.resort = true,
             None => ls_cmd.resort = false,
+        }
+
+        match cmd.get_option("-t").or(cmd.get_option("--time")) {
+            Some(_) => ls_cmd.sort_by_time = true,
+            None => ls_cmd.sort_by_time = false,
+        }
+
+        match cmd.get_option("-s").or(cmd.get_option("--size")) {
+            Some(_) => ls_cmd.sort_by_size = true,
+            None => ls_cmd.sort_by_size = false,
         }
 
         // Get the 'tree' option
