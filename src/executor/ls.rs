@@ -350,7 +350,14 @@ impl From<Box<dyn CommandAstNode>> for LsCmd {
         };
         // Set paths default value
         if ls_cmd.paths.is_empty() {
-            ls_cmd.paths.push(PathBuf::from("./"))
+            match env::current_dir() {
+                Ok(path) => {
+                    ls_cmd.paths.push(path);
+                }
+                Err(e) => {
+                    println!("Failed to get current directory: {}", e);
+                }
+            }
         }
 
         // Get the 'long' option
