@@ -1,8 +1,5 @@
 use std::{
-    fmt::Debug,
-    fs,
-    os::unix::fs::{FileTypeExt, MetadataExt, PermissionsExt},
-    path::PathBuf,
+    env, fmt::Debug, fs, os::unix::fs::{FileTypeExt, MetadataExt, PermissionsExt}, path::PathBuf,
 };
 
 use colored::{ColoredString, Colorize};
@@ -126,6 +123,105 @@ impl LsCmd {
         self.status
     }
 
+    // If don't get any option or use other options that don't define,
+    // just show non-hidden files name.
+    fn show_names(&self, files: &Vec<FileInfo>) {
+        for file in files.iter() {
+            if !self.all && file.is_hidden {
+                continue;
+            }
+
+            print!("{:<20}", self.color_file_names(&file));
+        }
+        // Add a new line at the end of the output.
+        println!();
+    }
+
+    // Show details of files and directories
+    fn show_infos(&self, files: &Vec<FileInfo>) {
+        for file in files.iter() {
+            if !self.all && file.is_hidden {
+                continue;
+            }
+
+            let size = if self.human_readable {
+                self.human_readable_size(file.size)
+            } else {
+                file.size.to_string()
+            };
+
+            let file_name_with_color = self.color_file_names(&file);
+
+            println!(
+                "{} {:>3} {:>8} {:>8} {:>8} {:>20} {}",
+                file.permissions,
+                file.link,
+                file.owner,
+                file.group,
+                size,
+                file.modified_time,
+                file_name_with_color
+            );
+        }
+    }
+
+    // Show files and directories as a tree.
+    fn show_as_tree(&self, path: &std::path::PathBuf) {
+        self.show_as_tree_recursively(path, 0);
+    }
+
+    // Show files and directories as a tree recursively.
+    #[cfg(unix)]
+    fn show_as_tree_recursively(&self, path: &std::path::PathBuf, depth: u8) {
+        if !path.exists() {
+            println!(
+                "{:indent$}| - {}",
+                "",
+                "No such file or directory".red(),
+                indent = (depth * 5) as usize
+            );
+            return;
+        }
+
+        if depth > self.depth {
+            return;
+        }
+
+        // Get file info.
+        let file_info = self.get_file_info(path);
+
+        // Get file name with color.
+        let file_name_with_color = self.color_file_names(&file_info);
+
+        // Print file name with color.
+        println!(
+            "{:indent$}| - {}",
+            "",
+            file_name_with_color,
+            indent = (depth * 5) as usize
+        );
+
+        // If the file is a directory, get all files and directories in it.
+        if file_info.file_type == FileType::Dir {
+            let paths = match fs::read_dir(path) {
+                Ok(paths) => paths,
+                Err(_) => {
+                    println!(
+                        "{:indent$}| - {}",
+                        "",
+                        "Permission denied".red(),
+                        indent = (depth * 5) as usize
+                    );
+                    return;
+                }
+            };
+            for path in paths {
+                let path = path.unwrap().path();
+                self.show_as_tree_recursively(&path, depth + 1);
+            }
+        }
+    }
+
     // Color file name by file type when show file names.
     fn color_file_names(&self, file: &FileInfo) -> ColoredString {
         match file.file_type {
@@ -185,8 +281,16 @@ impl LsCmd {
         let (permission, file_type) = self.analysis_mode(&metadata);
 
         // Get file name and judge if it is hidden.
-        let file_name = path_buf.file_name().unwrap().to_string_lossy().to_string();
-        let is_hidden = file_name.starts_with(".");
+        let file_name = match path_buf.file_name() {
+            Some(file_name) => {
+                let file_name = file_name.to_string_lossy().into_owned();
+                file_name
+            }
+            None => {
+                panic!("{}", format!("Error: Can't get file name").red());
+            }
+        };
+        let is_hidden: bool = file_name.starts_with(".");
 
         // println!("{}", format!("{} - {}", file_name, permission).red());
 
@@ -424,8 +528,8 @@ impl From<Box<dyn CommandAstNode>> for LsCmd {
 
         // Get the 'depth' option
         match cmd.get_option("--depth") {
-            Some(depth) => ls_cmd.depth = depth.parse::<u8>().unwrap_or(10),
-            None => ls_cmd.depth = 10,
+            Some(depth) => ls_cmd.depth = depth.parse::<u8>().unwrap_or(3),
+            None => ls_cmd.depth = 3,
         }
 
         // Initialize the status
@@ -441,8 +545,12 @@ impl Command for LsCmd {
             let mut files = Vec::new();
             self.get_files_and_dirs(path, &mut files);
 
-            println!("=========================");
-            println!("{:#?}", files);
+            let _v = match self.get_status() {
+                0 | 2 | 4 => self.show_names(&files),
+                1 | 3 | 5 | 7 => self.show_infos(&files),
+                8 => self.show_as_tree(path),
+                _ => self.show_names(&files),
+            };
         });
     }
 }
