@@ -108,6 +108,35 @@ impl Lexer {
                     self.store_token_and_trans_state(index, c);
                 }
 
+                // =============== grep command ===============
+                State::GrepCommandState1 => {
+                    if c.eq(&'r') {
+                        *(self.cur_state.borrow_mut()) = State::GrepCommandState2;
+                    } else {
+                        self.trans_state(c);
+                    }
+                }
+
+                State::GrepCommandState2 => {
+                    if c.eq(&'e') {
+                        *(self.cur_state.borrow_mut()) = State::GrepCommandState3;
+                    } else {
+                        self.trans_state(c);
+                    }
+                }
+
+                State::GrepCommandState3 => {
+                    if c.eq(&'p') {
+                        *(self.cur_state.borrow_mut()) = State::GrepCommandState;
+                    } else {
+                        self.trans_state(c);
+                    }
+                }
+
+                State::GrepCommandState => {
+                    self.store_token_and_trans_state(index, c);
+                }
+
                 // =============== number ===============
                 State::NumState => {
                     if c.is_numeric() || (state == State::NumState && c.eq(&'_')) {
@@ -148,7 +177,12 @@ impl Lexer {
 
                 // =============== Literal ===============
                 State::Literal => {
-                    if !(c.is_alphanumeric() || c.eq(&'_') || c.eq(&'-') || c.eq(&'/') || c.eq(&'.')) {
+                    if !(c.is_alphanumeric()
+                        || c.eq(&'_')
+                        || c.eq(&'-')
+                        || c.eq(&'/')
+                        || c.eq(&'.'))
+                    {
                         self.store_token_and_trans_state(index, c);
                     }
                 }
@@ -232,6 +266,7 @@ impl Lexer {
             let token_type = match state {
                 State::LsCommandState => TokenType::Ls,
                 State::CdCommandState => TokenType::Cd,
+                State::GrepCommandState => TokenType::Grep,
                 State::ShortParamState => TokenType::ShortParam,
                 State::LongParamState => TokenType::LongParam,
                 State::PipeState => TokenType::Pipe,
@@ -308,6 +343,7 @@ impl Lexer {
         match c {
             'l' => *state = State::LsCommandState1,
             'c' => *state = State::CdCommandState1,
+            'g' => *state = State::GrepCommandState1,
             '0'..='9' => *state = State::NumState,
             '-' => {
                 if *state == State::Start || *state == State::WhiteSpace {
@@ -315,7 +351,7 @@ impl Lexer {
                 } else {
                     *state = State::Literal
                 }
-            },
+            }
             '|' => *state = State::PipeState,
             ',' => *state = State::CommaState,
             ';' => *state = State::SemicolonState,

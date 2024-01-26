@@ -165,7 +165,7 @@ mod test {
     }
 
     #[test]
-    fn test_split_tokens(){
+    fn test_split_tokens() {
         let l = Lexer::new("Programs/Rust/ru-shell,Programs/Rust/ru-shell,Programs/Rust/ru-shell");
 
         let tokens = vec![
@@ -174,6 +174,24 @@ mod test {
             Token::new(TokenType::Literal, "Programs/Rust/ru-shell".to_string()),
             Token::new(TokenType::Comma, ",".to_string()),
             Token::new(TokenType::Literal, "Programs/Rust/ru-shell".to_string()),
+            Token::new(TokenType::Eof, "".to_string()),
+        ];
+
+        for token in tokens.iter() {
+            let next_token = l.next_token().unwrap();
+            assert_eq!(*token.token_type(), *next_token.token_type());
+            assert_eq!(token.literal(), next_token.literal());
+        }
+    }
+
+    #[test]
+    fn test_grep_token() {
+        let l = Lexer::new("grep a bac");
+
+        let tokens = vec![
+            Token::new(TokenType::Grep, "grep".to_string()),
+            Token::new(TokenType::Literal, "a".to_string()),
+            Token::new(TokenType::Literal, "bac".to_string()),
             Token::new(TokenType::Eof, "".to_string()),
         ];
 
