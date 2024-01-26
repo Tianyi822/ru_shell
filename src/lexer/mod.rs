@@ -15,6 +15,12 @@ enum State {
     CdCommandState1,
     CdCommandState,
 
+    // grep command
+    GrepCommandState1,
+    GrepCommandState2,
+    GrepCommandState3,
+    GrepCommandState,
+
     // number
     NumState,
 
