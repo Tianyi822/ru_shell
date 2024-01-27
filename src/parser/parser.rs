@@ -157,8 +157,10 @@ impl Parser {
 
     // Parse ls command
     fn parse_exe_command(&self) -> Box<dyn CommandAstNode> {
+        let cur_token = self.cur_token.borrow().clone();
+
         // Build the ls command node.
-        let mut exe_command = match self.cur_token.borrow().clone() {
+        let mut exe_command = match cur_token {
             Some(token) => ExeCommandAstNode::new(token),
             None => panic!("No token"),
         };
@@ -166,12 +168,20 @@ impl Parser {
         self.next_token();
 
         // Parse the parameters of the ls command.
-        match self.parse_params() {
+        match self.parse_options() {
             Some(params) => {
                 exe_command.set_options(params);
             }
             None => (),
         };
+
+        // Parse the pattern of the grep command.
+        if exe_command.token_type() == &TokenType::Grep {
+            match self.parse_pattern() {
+                Some(paths) => exe_command.add_value(paths),
+                None => (),
+            };
+        }
 
         // Parse the paths of the ls command.
         match self.parse_paths() {
@@ -186,6 +196,33 @@ impl Parser {
             }
             None => return Box::new(exe_command),
         }
+    }
+
+    // Parse the matching rules of the 'Pattern matching' command.
+    fn parse_pattern(&self) -> Option<String> {
+        let cur_token = match self.cur_token.borrow().clone() {
+            Some(token) => token,
+            None => return None,
+        };
+
+        // Iterate through the subsequent tokens and add them to the current pattern
+        // until the condition is not met.
+        let mut pattern = String::from("");
+        loop {
+            if *cur_token.token_type() == TokenType::Literal
+                || *cur_token.token_type() == TokenType::Num
+                || *cur_token.token_type() == TokenType::Slash
+                || *cur_token.token_type() == TokenType::Dot
+                || *cur_token.token_type() == TokenType::Tilde
+            {
+                pattern.push_str(cur_token.literal());
+                self.next_token();
+            } else {
+                break;
+            }
+        }
+
+        Some(pattern)
     }
 
     // Parse the paths of the command.
@@ -255,7 +292,7 @@ impl Parser {
     }
 
     // Parse the parameters of the command.
-    fn parse_params(&self) -> Option<Vec<(String, String)>> {
+    fn parse_options(&self) -> Option<Vec<(String, String)>> {
         let mut params: Vec<(String, String)> = Vec::new();
 
         loop {
@@ -264,7 +301,7 @@ impl Parser {
             match cur_token {
                 Some(ref token) => match token.token_type() {
                     TokenType::ShortParam | TokenType::LongParam => {
-                        match self.parse_param() {
+                        match self.parse_option() {
                             Some((param, value)) => {
                                 params.push((param, value));
                             }
@@ -281,7 +318,7 @@ impl Parser {
     }
 
     // Parse the parameters of the command.
-    fn parse_param(&self) -> Option<(String, String)> {
+    fn parse_option(&self) -> Option<(String, String)> {
         let cur_token = match self.cur_token.borrow().clone() {
             Some(token) => token,
             None => return None,
