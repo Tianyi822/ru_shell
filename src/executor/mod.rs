@@ -1,6 +1,7 @@
 use std::fmt::Debug;
 
 pub mod executor;
+pub mod grep;
 pub mod ls;
 
 // Command trait
