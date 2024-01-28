@@ -37,6 +37,8 @@ pub enum TokenType {
     LeftBracket,  // [
     RightBracket, // ]
     Tilde,        // ~
+    Quote,        // "
+    SingleQuote,  // '
 
     // Combined Symbols
     DoubleMinus,          // --

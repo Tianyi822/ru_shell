@@ -201,4 +201,29 @@ mod test {
             assert_eq!(token.literal(), next_token.literal());
         }
     }
+
+    #[test]
+    fn test_quote_token() {
+        let l = Lexer::new("echo \"hello world\" 'hello world'");
+
+        let tokens = vec![
+            Token::new(TokenType::Literal, "echo".to_string()),
+            Token::new(TokenType::Quote, "\"".to_string()),
+            Token::new(TokenType::Literal, "hello".to_string()),
+            Token::new(TokenType::Literal, "world".to_string()),
+            Token::new(TokenType::Quote, "\"".to_string()),
+            Token::new(TokenType::SingleQuote, "'".to_string()),
+            Token::new(TokenType::Literal, "hello".to_string()),
+            Token::new(TokenType::Literal, "world".to_string()),
+            Token::new(TokenType::SingleQuote, "'".to_string()),
+            Token::new(TokenType::Eof, "".to_string()),
+        ];
+
+        for token in tokens.iter() {
+            let next_token = l.next_token().unwrap();
+
+            assert_eq!(*token.token_type(), *next_token.token_type());
+            assert_eq!(token.literal(), next_token.literal());
+        }
+    }
 }
