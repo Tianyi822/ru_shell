@@ -115,7 +115,7 @@ impl Parser {
         // and return the parsed AST (Abstract Syntax Tree) node.
         let ext_cmd: Option<Box<dyn CommandAstNode>> = match cur_token {
             Some(ref token) => match token.token_type() {
-                TokenType::Ls | TokenType::Cd => Some(self.parse_exe_command()),
+                TokenType::Ls | TokenType::Cd | TokenType::Grep => Some(self.parse_exe_command()),
                 _ => None,
             },
             None => None,
@@ -200,10 +200,21 @@ impl Parser {
 
     // Parse the matching rules of the 'Pattern matching' command.
     fn parse_pattern(&self) -> Option<String> {
-        let cur_token = match self.cur_token.borrow().clone() {
+        let mut cur_token = match self.cur_token.borrow().clone() {
             Some(token) => token,
             None => return None,
         };
+
+        // If the current token is a double quotation mark, then the pattern is complete.
+        if *cur_token.token_type() == TokenType::Quote {
+            self.next_token();
+            cur_token = match self.cur_token.borrow().clone() {
+                Some(token) => token,
+                None => return None,
+            };
+        } else {
+            return None;
+        }
 
         // Iterate through the subsequent tokens and add them to the current pattern
         // until the condition is not met.
@@ -217,9 +228,20 @@ impl Parser {
             {
                 pattern.push_str(cur_token.literal());
                 self.next_token();
+                cur_token = match self.cur_token.borrow().clone() {
+                    Some(token) => token,
+                    None => return None,
+                };
             } else {
                 break;
             }
+        }
+
+        // If the current token is a double quotation mark, then the pattern is complete.
+        if *cur_token.token_type() == TokenType::Quote {
+            self.next_token();
+        } else {
+            return None;
         }
 
         Some(pattern)
