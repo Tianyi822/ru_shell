@@ -45,6 +45,8 @@ enum State {
     StarState,        // *
     BackgroundState,  // &
     TildeState,       // ~
+    QuoteState,       // "
+    SingleQuoteState, // '
 
     // Combined Symbols
     AndState, // &&
