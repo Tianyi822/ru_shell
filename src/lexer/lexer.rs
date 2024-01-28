@@ -202,9 +202,7 @@ impl Lexer {
                 | State::AssignmentState
                 | State::SlashState
                 | State::StarState
-                | State::TildeState 
-                | State::QuoteState
-                | State::SingleQuoteState => {
+                | State::TildeState => {
                     self.store_token_and_trans_state(index, c);
                 }
 
@@ -266,17 +264,12 @@ impl Lexer {
         if !(state == State::WhiteSpace) {
             // Match the state to get the token type.
             let token_type = match state {
-                // =============== command ===============
                 State::LsCommandState => TokenType::Ls,
                 State::CdCommandState => TokenType::Cd,
                 State::GrepCommandState => TokenType::Grep,
-                State::PipeState => TokenType::Pipe,
-
-                // =============== parameter ===============
                 State::ShortParamState => TokenType::ShortParam,
                 State::LongParamState => TokenType::LongParam,
-
-                // =============== single symbols ===============
+                State::PipeState => TokenType::Pipe,
                 State::CommaState => TokenType::Comma,
                 State::SemicolonState => TokenType::Semicolon,
                 State::GreaterThanState => TokenType::GreaterThan,
@@ -284,21 +277,13 @@ impl Lexer {
                 State::DotState => TokenType::Dot,
                 State::ColonState => TokenType::Colon,
                 State::AssignmentState => TokenType::Assignment,
+                State::NumState => TokenType::Num,
                 State::SlashState => TokenType::Slash,
                 State::StarState => TokenType::Star,
                 State::BackgroundState => TokenType::Background,
-                State::TildeState => TokenType::Tilde,
-                State::QuoteState => TokenType::Quote,
-                State::SingleQuoteState => TokenType::SingleQuote,
-
-                // =============== combined symbols ===============
                 State::AndState => TokenType::And,
                 State::OrState => TokenType::Or,
-
-                // =============== number ===============
-                State::NumState => TokenType::Num,
-
-                // =============== literal ===============
+                State::TildeState => TokenType::Tilde,
                 State::Literal => TokenType::Literal,
                 _ => todo!(),
             };
@@ -379,8 +364,6 @@ impl Lexer {
             '*' => *state = State::StarState,
             '&' => *state = State::BackgroundState,
             '~' => *state = State::TildeState,
-            '"' => *state = State::QuoteState,
-            '\'' => *state = State::SingleQuoteState,
             '_' => {
                 if *state == State::StarState || *state == State::WhiteSpace {
                     *state = State::Literal;
