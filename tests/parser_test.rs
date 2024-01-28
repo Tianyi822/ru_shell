@@ -63,12 +63,37 @@ mod parser_test {
         assert_eq!(cmd.cmd_type(), &ru_shell::parser::CommandType::ChainCommand);
         assert_eq!(cmd.token_type(), &TokenType::Pipe);
         assert_eq!(cmd.get_source().unwrap().token_type(), &TokenType::Ls);
-        assert_eq!(cmd.get_destination().unwrap().token_type(), &TokenType::Pipe);
+        assert_eq!(
+            cmd.get_destination().unwrap().token_type(),
+            &TokenType::Pipe
+        );
 
         let cmd2 = cmd.get_destination().unwrap();
         assert_eq!(cmd2.get_source().unwrap().token_type(), &TokenType::Cd);
         assert_eq!(cmd2.get_destination().unwrap().token_type(), &TokenType::Ls);
-        assert_eq!(cmd2.get_destination().unwrap().get_option("--tree"), Some(""));
-        assert_eq!(cmd2.get_destination().unwrap().get_option("--depth"), Some("3"));
+        assert_eq!(
+            cmd2.get_destination().unwrap().get_option("--tree"),
+            Some("")
+        );
+        assert_eq!(
+            cmd2.get_destination().unwrap().get_option("--depth"),
+            Some("3")
+        );
+    }
+
+    #[test]
+    fn test_grep_command_parse() {
+        let parser = Parser::new("grep -i -n -r \"main\" ~/Programs/Rust/ru-shell");
+
+        // println!("{:#?}", parser);
+
+        let cmd = parser.iter().next().unwrap();
+        assert_eq!(cmd.cmd_type(), &ru_shell::parser::CommandType::ExtCommand);
+        assert_eq!(cmd.token_type(), &TokenType::Grep);
+        assert_eq!(cmd.get_option("-i"), Some(""));
+        assert_eq!(cmd.get_option("-n"), Some(""));
+        assert_eq!(cmd.get_option("-r"), Some(""));
+        assert_eq!(cmd.get_values().unwrap()[0], "main");
+        assert_eq!(cmd.get_values().unwrap()[1], "~/Programs/Rust/ru-shell");
     }
 }
