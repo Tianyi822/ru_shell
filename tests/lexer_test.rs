@@ -204,10 +204,10 @@ mod test {
 
     #[test]
     fn test_quote_token() {
-        let l = Lexer::new("echo \"hello world\" 'hello world'");
+        let l = Lexer::new("grep \"hello world\" 'hello world'");
 
         let tokens = vec![
-            Token::new(TokenType::Literal, "echo".to_string()),
+            Token::new(TokenType::Grep, "grep".to_string()),
             Token::new(TokenType::Quote, "\"".to_string()),
             Token::new(TokenType::Literal, "hello".to_string()),
             Token::new(TokenType::Literal, "world".to_string()),
