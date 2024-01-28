@@ -42,8 +42,20 @@ impl CommandAstNode for ExeCommandAstNode {
         self.option.get(option).map(|s| s.as_str())
     }
 
+    fn add_value(&mut self, value: String) {
+        if let Some(values) = &mut self.values {
+            values.push(value);
+        } else {
+            self.values = Some(vec![value]);
+        }
+    }
+
     fn set_values(&mut self, values: Vec<String>) {
-        self.values = Some(values);
+        if let Some(self_value) = &mut self.values {
+            self_value.extend(values);
+        } else {
+            self.values = Some(values);
+        }
     }
 
     fn get_values(&self) -> Option<Vec<String>> {
@@ -111,6 +123,8 @@ impl CommandAstNode for ChainCommandAstNode {
     fn get_option(&self, _option: &str) -> Option<&str> {
         None
     }
+
+    fn add_value(&mut self, _value: String) {}
 
     fn set_values(&mut self, _values: Vec<String>) {}
 

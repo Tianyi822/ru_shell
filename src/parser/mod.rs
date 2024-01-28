@@ -27,6 +27,9 @@ pub trait CommandAstNode: std::fmt::Debug {
     // Get the command option.
     fn get_option(&self, option: &str) -> Option<&str>;
 
+    // Add one command value.
+    fn add_value(&mut self, value: String);
+
     // Add the command values.
     fn set_values(&mut self, values: Vec<String>);
 
