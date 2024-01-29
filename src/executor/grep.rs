@@ -26,10 +26,7 @@ impl Command for GrepCmd {
 impl From<Box<dyn CommandAstNode>> for GrepCmd {
     fn from(cmd: Box<dyn CommandAstNode>) -> Self {
         // Get values
-        let values = match cmd.get_values() {
-            Some(values) => values,
-            None => Vec::new(),
-        };
+        let values = cmd.get_values().unwrap_or_else(|| Vec::new());
 
         // Get pattern
         let pattern = match values.get(0) {
