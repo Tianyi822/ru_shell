@@ -9,11 +9,15 @@ pub struct GrepCmd {
 }
 
 impl GrepCmd {
-    pub fn new(pattern: String, file: &str) -> Self {
-        GrepCmd {
-            pattern,
-            file: PathBuf::from(file),
-        }
+    pub fn new(pattern: String, file: PathBuf) -> Self {
+        GrepCmd { pattern, file }
+    }
+
+    // TODO: Implement grep
+    fn grep(&self) -> Vec<String> {
+        let result: Vec<String> = Vec::new();
+
+        result
     }
 }
 
@@ -37,10 +41,16 @@ impl From<Box<dyn CommandAstNode>> for GrepCmd {
         // Get file
         let file = match values.get(1) {
             Some(values) => values,
-            None => "",
+            None => panic!("File that should be grepped is not provided"),
         };
 
-        let grep_cmd = GrepCmd::new(pattern, file);
+        // Check if file exists
+        let file_buf = PathBuf::from(file);
+        if file_buf.exists() == false {
+            panic!("File {} does not exist", file_buf.display());
+        }
+
+        let grep_cmd = GrepCmd::new(pattern, file_buf);
 
         grep_cmd
     }
