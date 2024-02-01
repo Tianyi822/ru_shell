@@ -1,4 +1,10 @@
-use std::path::PathBuf;
+use std::{
+    fs::File,
+    io::{self, BufRead},
+    path::PathBuf,
+};
+
+use colored::Colorize;
 
 use crate::{executor::Command, parser::CommandAstNode};
 
@@ -15,7 +21,34 @@ impl GrepCmd {
 
     // TODO: Implement grep
     fn grep(&self) -> Vec<String> {
-        let result: Vec<String> = Vec::new();
+        // Collect the results that contain the pattern str.
+        let mut result: Vec<String> = Vec::new();
+
+        // Open the file
+        let file = File::open(&self.file).unwrap();
+        let reader = io::BufReader::new(file);
+
+        // Read the file line by line
+        for line in reader.lines() {
+            match line {
+                Ok(line) => {
+                    // Check if the line contains the pattern string
+                    if line.contains(&self.pattern) {
+                        result.push({
+                            // Colorize the pattern string
+                            let gs = self.pattern.red().to_string();
+                            // Replace the pattern string with the colorized pattern string
+                            let new_str_with_color = line.replace(&self.pattern, &gs);
+
+                            new_str_with_color
+                        });
+                    } else {
+                        continue;
+                    }
+                }
+                Err(e) => panic!("Error: {}", e),
+            }
+        }
 
         result
     }
@@ -23,7 +56,7 @@ impl GrepCmd {
 
 impl Command for GrepCmd {
     fn execute(&self) {
-        todo!()
+        self.grep().iter().for_each(|line| println!("{}", line));
     }
 }
 
