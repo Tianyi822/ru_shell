@@ -1,5 +1,9 @@
 use std::{
-    env, fmt::Debug, fs, os::unix::fs::{FileTypeExt, MetadataExt, PermissionsExt}, path::PathBuf,
+    env,
+    fmt::Debug,
+    fs,
+    os::unix::fs::{FileTypeExt, MetadataExt, PermissionsExt},
+    path::PathBuf,
 };
 
 use colored::{ColoredString, Colorize};
@@ -90,31 +94,6 @@ impl LsCmd {
             depth: 10,
             paths: Vec::new(),
             status: 0,
-        }
-    }
-
-    // Set status of the command
-    fn init_status(&mut self) {
-        // Set status to 0 by default
-        self.status = 0;
-
-        // Set status to 1 if get '-l' option
-        if self.long {
-            self.status |= 1;
-        }
-
-        // Set status to 2 if get '-a' option
-        if self.all {
-            self.status |= 2;
-        }
-
-        // Set status to 4 if get '-H' option
-        if self.human_readable {
-            self.status |= 4;
-        }
-
-        if self.tree {
-            self.status |= 8;
         }
     }
 
@@ -552,5 +531,30 @@ impl Command for LsCmd {
                 _ => self.show_names(&files),
             };
         });
+    }
+
+    // Set status of the command
+    fn init_status(&mut self) {
+        // Set status to 0 by default
+        self.status = 0;
+
+        // Set status to 1 if get '-l' option
+        if self.long {
+            self.status |= 1;
+        }
+
+        // Set status to 2 if get '-a' option
+        if self.all {
+            self.status |= 2;
+        }
+
+        // Set status to 4 if get '-H' option
+        if self.human_readable {
+            self.status |= 4;
+        }
+
+        if self.tree {
+            self.status |= 8;
+        }
     }
 }

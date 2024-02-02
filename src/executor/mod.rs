@@ -8,4 +8,7 @@ pub mod ls;
 pub trait Command: Debug {
     // Execute command
     fn execute(&self);
+
+    // Init self status
+    fn init_status(&mut self);
 }
