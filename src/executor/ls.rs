@@ -97,11 +97,6 @@ impl LsCmd {
         }
     }
 
-    // Get status of the command
-    fn get_status(&self) -> u8 {
-        self.status
-    }
-
     // If don't get any option or use other options that don't define,
     // just show non-hidden files name.
     fn show_names(&self, files: &Vec<FileInfo>) {
@@ -512,7 +507,7 @@ impl From<Box<dyn CommandAstNode>> for LsCmd {
         }
 
         // Initialize the status
-        ls_cmd.init_status();
+        ls_cmd.set_status();
 
         ls_cmd
     }
@@ -534,7 +529,7 @@ impl Command for LsCmd {
     }
 
     // Set status of the command
-    fn init_status(&mut self) {
+    fn set_status(&mut self) {
         // Set status to 0 by default
         self.status = 0;
 
@@ -556,5 +551,10 @@ impl Command for LsCmd {
         if self.tree {
             self.status |= 8;
         }
+    }
+
+    // Get status of the command
+    fn get_status(&self) -> u8 {
+        self.status
     }
 }
