@@ -14,7 +14,4 @@ pub trait Command: Debug {
 
     // Init self status
     fn set_status(&mut self);
-
-    // Get status
-    fn get_status(&self) -> u8;
 }

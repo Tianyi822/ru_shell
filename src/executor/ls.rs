@@ -519,7 +519,7 @@ impl Command for LsCmd {
             let mut files = Vec::new();
             self.get_files_and_dirs(path, &mut files);
 
-            let _v = match self.get_status() {
+            let _v = match self.status {
                 0 | 2 | 4 => self.show_names(&files),
                 1 | 3 | 5 | 7 => self.show_infos(&files),
                 8 => self.show_as_tree(path),
@@ -551,10 +551,5 @@ impl Command for LsCmd {
         if self.tree {
             self.status |= 8;
         }
-    }
-
-    // Get status of the command
-    fn get_status(&self) -> u8 {
-        self.status
     }
 }
