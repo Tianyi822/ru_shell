@@ -97,9 +97,29 @@ impl LsCmd {
         }
     }
 
-    // Get status of the command
-    fn get_status(&self) -> u8 {
-        self.status
+    // Set status of the command
+    fn set_status(&mut self) {
+        // Set status to 0 by default
+        self.status = 0;
+
+        // Set status to 1 if get '-l' option
+        if self.long {
+            self.status |= 1;
+        }
+
+        // Set status to 2 if get '-a' option
+        if self.all {
+            self.status |= 2;
+        }
+
+        // Set status to 4 if get '-H' option
+        if self.human_readable {
+            self.status |= 4;
+        }
+
+        if self.tree {
+            self.status |= 8;
+        }
     }
 
     // If don't get any option or use other options that don't define,
@@ -512,7 +532,7 @@ impl From<Box<dyn CommandAstNode>> for LsCmd {
         }
 
         // Initialize the status
-        ls_cmd.init_status();
+        ls_cmd.set_status();
 
         ls_cmd
     }
@@ -524,37 +544,12 @@ impl Command for LsCmd {
             let mut files = Vec::new();
             self.get_files_and_dirs(path, &mut files);
 
-            let _v = match self.get_status() {
+            let _v = match self.status {
                 0 | 2 | 4 => self.show_names(&files),
                 1 | 3 | 5 | 7 => self.show_infos(&files),
                 8 => self.show_as_tree(path),
                 _ => self.show_names(&files),
             };
         });
-    }
-
-    // Set status of the command
-    fn init_status(&mut self) {
-        // Set status to 0 by default
-        self.status = 0;
-
-        // Set status to 1 if get '-l' option
-        if self.long {
-            self.status |= 1;
-        }
-
-        // Set status to 2 if get '-a' option
-        if self.all {
-            self.status |= 2;
-        }
-
-        // Set status to 4 if get '-H' option
-        if self.human_readable {
-            self.status |= 4;
-        }
-
-        if self.tree {
-            self.status |= 8;
-        }
     }
 }
