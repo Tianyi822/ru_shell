@@ -11,7 +11,4 @@ pub mod ls;
 pub trait Command: Debug {
     // Execute command
     fn execute(&self);
-
-    // Init self status
-    fn set_status(&mut self);
 }
