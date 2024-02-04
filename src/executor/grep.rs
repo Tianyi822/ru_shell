@@ -12,13 +12,14 @@ use crate::{executor::Command, parser::CommandAstNode};
 The 'grep' command is used to search for a specific string in a file or files.
 
 These are the options that the 'grep' command supports:
-    -i => status-1 : Ignore case. Searches without case sensitivity.
-    -v => status-2 : Invert match. Selects lines that do not match the specified pattern.
-    -c => status-4 : Count. Outputs only the number of matching lines, not the content of the matches themselves.
-    -l: List files. Lists only the filenames that contain the matching string, not the specific matching lines.
+    -i: Ignore case. Searches without case sensitivity.
+    -v: Invert match. Selects lines that do not match the specified pattern.
+    -c: Count. Outputs only the number of matching lines, not the content of the matches themselves.
     -n: Show line number. Displays the line number in the file before each matching line.
-    -r or -R: Recursive search. Searches for matching strings in all files within the specified directory and its subdirectories.
-    -e: Use extended regular expressions (ERE) syntax. Allows the use of more complex matching patterns.
+
+    -l: List files. Lists only the filenames that contain the matching string, not the specific matching lines.
+    -r: Recursive search. Searches for matching strings in all files within the specified directory and its subdirectories.
+
     -o: Show only the matching part of the string, not the entire line that contains the match.
     -A num: Show the matching line and the next num lines of content.
     -B num: Show the matching line and the previous num lines of content.

@@ -34,4 +34,13 @@ mod executor_test {
             }
         }
     }
+
+    #[test]
+    fn test_grep_cmd() {
+        let exe = Executor::new("grep -i -v -c \"col\" Cargo.toml");
+
+        assert_eq!(exe.get_cmds().len(), 1);
+
+        exe.execute();
+    }
 }

@@ -4,6 +4,8 @@ use crate::parser::{CommandAstNode, CommandType};
 use crate::parser::parser::Parser;
 use crate::token::token::TokenType;
 
+use super::grep::GrepCmd;
+
 // This executor obtains the commands to be executed
 // and their relevant parameters by parsing the AST,
 // saves the parsing results into an array,
@@ -60,6 +62,7 @@ impl Executor {
     fn analyze_exe_node(&mut self, cmd: Box<dyn CommandAstNode>) -> Box<dyn Command> {
         match cmd.token_type() {
             TokenType::Ls => Box::new(LsCmd::from(cmd)),
+            TokenType::Grep => Box::new(GrepCmd::from(cmd)),
             _ => {
                 todo!()
             }
