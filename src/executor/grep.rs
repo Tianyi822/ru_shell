@@ -8,15 +8,49 @@ use colored::Colorize;
 
 use crate::{executor::Command, parser::CommandAstNode};
 
+/*
+The 'grep' command is used to search for a specific string in a file or files.
+
+These are the options that the 'grep' command supports:
+    -i => status-1 : Ignore case. Searches without case sensitivity.
+    -v => status-2 : Invert match. Selects lines that do not match the specified pattern.
+    -c => status-4 : Count. Outputs only the number of matching lines, not the content of the matches themselves.
+    -l: List files. Lists only the filenames that contain the matching string, not the specific matching lines.
+    -n: Show line number. Displays the line number in the file before each matching line.
+    -r or -R: Recursive search. Searches for matching strings in all files within the specified directory and its subdirectories.
+    -e: Use extended regular expressions (ERE) syntax. Allows the use of more complex matching patterns.
+    -o: Show only the matching part of the string, not the entire line that contains the match.
+    -A num: Show the matching line and the next num lines of content.
+    -B num: Show the matching line and the previous num lines of content.
+    -C num or --context=num: Show the matching line and num lines of content before and after it, providing more context.
+*/
 #[derive(Debug)]
 pub struct GrepCmd {
+    // The pattern to search for in the file
     pattern: String,
+
+    // The file to search
     file: PathBuf,
+
+    // Whether to ignore case
+    ignore_case: bool,
+
+    // This option selects lines that do not match the specified pattern.
+    invert_match: bool,
+
+    // This option outputs only the number of matching lines, not the content of the matches themselves.
+    count: bool,
 }
 
 impl GrepCmd {
     pub fn new(pattern: String, file: PathBuf) -> Self {
-        GrepCmd { pattern, file }
+        GrepCmd {
+            pattern,
+            file,
+            ignore_case: true,
+            invert_match: false,
+            count: true,
+        }
     }
 
     // TODO: Implement grep
@@ -32,19 +66,7 @@ impl GrepCmd {
         for line in reader.lines() {
             match line {
                 Ok(line) => {
-                    // Check if the line contains the pattern string
-                    if line.contains(&self.pattern) {
-                        result.push({
-                            // Colorize the pattern string
-                            let gs = self.pattern.red().to_string();
-                            // Replace the pattern string with the colorized pattern string
-                            let new_str_with_color = line.replace(&self.pattern, &gs);
-
-                            new_str_with_color
-                        });
-                    } else {
-                        continue;
-                    }
+                    self.deal_line(line).map(|line: String| result.push(line));
                 }
                 Err(e) => panic!("Error: {}", e),
             }
@@ -52,11 +74,45 @@ impl GrepCmd {
 
         result
     }
+
+    fn deal_line(&self, mut line: String) -> Option<String> {
+        // Check if the line contains the pattern string
+        if self.ignore_case {
+            line = line.to_lowercase();
+        }
+
+        if self.invert_match {
+            // If the line contains the pattern string, return None
+            if line.contains(&self.pattern) {
+                return None;
+            }
+        } else {
+            // If the line does not contain the pattern string, return None
+            if !line.contains(&self.pattern) {
+                return None;
+            } else {
+                // If the line contains the pattern string, colorize the pattern string
+                let gs = self.pattern.red().to_string();
+                // Replace the pattern string with the colorized pattern string
+                line = line.replace(&self.pattern, &gs);
+            }
+        }
+
+        Some(line)
+    }
 }
 
 impl Command for GrepCmd {
     fn execute(&self) {
-        self.grep().iter().for_each(|line| println!("{}", line));
+        let result = self.grep();
+
+        if self.count {
+            println!("{}: {}", self.file.display(), result.len());
+        } else {
+            for line in result {
+                println!("{}", line);
+            }
+        }
     }
 }
 
@@ -83,7 +139,23 @@ impl From<Box<dyn CommandAstNode>> for GrepCmd {
             panic!("File {} does not exist", file_buf.display());
         }
 
-        let grep_cmd = GrepCmd::new(pattern, file_buf);
+        let mut grep_cmd = GrepCmd::new(pattern, file_buf);
+
+        // Get options
+        match cmd.get_option("-i") {
+            Some(_) => grep_cmd.ignore_case = true,
+            None => grep_cmd.ignore_case = false,
+        }
+
+        match cmd.get_option("-v") {
+            Some(_) => grep_cmd.invert_match = true,
+            None => grep_cmd.invert_match = false,
+        }
+
+        match cmd.get_option("-c") {
+            Some(_) => grep_cmd.count = true,
+            None => grep_cmd.count = false,
+        }
 
         grep_cmd
     }
