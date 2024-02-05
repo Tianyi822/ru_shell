@@ -1,5 +1,5 @@
-mod token;
+use ru_shell::repl;
 
 fn main() {
-    println!("Hello, world!");
+    repl::run();
 }
