@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod test {
-    use ru_shell::lexer::lexer::Lexer;
+    use ru_shell::lexer::Lexer;
     use ru_shell::token::token::{Token, TokenType};
 
     #[test]

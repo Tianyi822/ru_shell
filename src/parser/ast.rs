@@ -1,8 +1,9 @@
 use std::collections::HashMap;
 
+use crate::parser::command_ast::CommandType;
 use crate::token::token::{Token, TokenType};
 
-use super::{CommandAstNode, CommandType};
+use super::CommandAstNode;
 
 #[derive(Debug, Clone)]
 pub struct ExeCommandAstNode {
