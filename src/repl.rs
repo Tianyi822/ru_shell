@@ -12,7 +12,7 @@ pub fn run() {
     let mut logo = String::new();
     buf_reader.read_to_string(&mut logo).unwrap();
     println!("{}", logo);
-    println!("");
+    println!("Welcome to the Rusty Shell!");
 
     loop {
         print!("> ");
