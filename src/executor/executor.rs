@@ -1,83 +1,56 @@
-use crate::executor::Command;
 use crate::executor::ls::LsCmd;
-use crate::parser::{CommandAstNode, CommandType};
+use crate::executor::Command;
 use crate::parser::parser::Parser;
+use crate::parser::{CommandAstNode, CommandType};
 use crate::token::token::TokenType;
 
 use super::grep::GrepCmd;
 
-// This executor obtains the commands to be executed
-// and their relevant parameters by parsing the AST,
-// saves the parsing results into an array,
-// and executes them in sequence immediately
-// after completing the parsing of all AST nodes.
-#[derive(Debug)]
-pub struct Executor {
-    // Commands to be executed
-    cmds: Vec<Box<dyn Command>>,
-}
+// Execute all commands
+pub fn execute(cmd: &str) {
+    // Create new Parser
+    let parser = Parser::new(cmd);
 
-impl Executor {
-    // Create new Executor
-    pub fn new(cmd: &str) -> Self {
-        let mut executor = Self { cmds: Vec::new() };
+    // Create new array to save the command
+    let mut cmds: Vec<Box<dyn Command>> = Vec::new();
 
-        // Create new Parser
-        let parser = Parser::new(cmd);
-
-        // Analyze the AST and save the command into an array
-        for cmd in parser.iter() {
-            executor.add_cmd(cmd);
-        }
-
-        // Clear the Parser data
-        parser.clear();
-
-        executor
-    }
-
-    // Execute all commands
-    pub fn execute(&self) {
-        for cmd in self.cmds.iter() {
-            cmd.execute();
-        }
-    }
-
-    // Get cmds that was analyzed
-    pub fn get_cmds(&self) -> &Vec<Box<dyn Command>> {
-        &self.cmds
-    }
-
-    // Add command to cmds that was analyzed
-    pub fn add_cmd(&mut self, cmd: Box<dyn CommandAstNode>) {
+    // Analyze the AST and save the command into an array
+    for cmd in parser.iter() {
         let cmd = match cmd.cmd_type() {
-            CommandType::ExtCommand => self.analyze_exe_node(cmd),
-            CommandType::ChainCommand => self.analyze_chain_node(cmd),
+            CommandType::ExtCommand => analyze_exe_node(cmd),
+            CommandType::ChainCommand => analyze_chain_node(cmd),
         };
 
-        self.cmds.push(cmd);
+        cmds.push(cmd);
     }
 
-    /// Analyze the AST which type is [`parser::CommandType::ExtCommand`].
-    fn analyze_exe_node(&mut self, cmd: Box<dyn CommandAstNode>) -> Box<dyn Command> {
-        match cmd.token_type() {
-            TokenType::Ls => Box::new(LsCmd::from(cmd)),
-            TokenType::Grep => Box::new(GrepCmd::from(cmd)),
-            _ => {
-                todo!()
-            }
+    // Clear the Parser data
+    parser.clear();
+
+    for cmd in cmds.iter() {
+        cmd.execute();
+    }
+}
+
+/// Analyze the AST which type is [`parser::CommandType::ExtCommand`].
+fn analyze_exe_node(cmd: Box<dyn CommandAstNode>) -> Box<dyn Command> {
+    match cmd.token_type() {
+        TokenType::Ls => Box::new(LsCmd::from(cmd)),
+        TokenType::Grep => Box::new(GrepCmd::from(cmd)),
+        _ => {
+            todo!()
         }
     }
+}
 
-    /// Analyze the AST which type is [`parser::CommandType::ChainCommand`].
-    fn analyze_chain_node(&mut self, cmd: Box<dyn CommandAstNode>) -> Box<dyn Command> {
-        match cmd.token_type() {
-            TokenType::Pipe => {
-                todo!()
-            }
-            _ => {
-                todo!()
-            }
+/// Analyze the AST which type is [`parser::CommandType::ChainCommand`].
+fn analyze_chain_node(cmd: Box<dyn CommandAstNode>) -> Box<dyn Command> {
+    match cmd.token_type() {
+        TokenType::Pipe => {
+            todo!()
+        }
+        _ => {
+            todo!()
         }
     }
 }

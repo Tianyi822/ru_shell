@@ -2,25 +2,16 @@
 mod executor_test {
     use std::env;
 
-    use ru_shell::executor::executor::Executor;
+    use ru_shell::executor::*;
 
     #[test]
     fn test_new_executor() {
-        let exe = Executor::new("ls -l -h -s -r");
-
-        // println!("{:#?}", exe);
-        assert_eq!(exe.get_cmds().len(), 1);
-
-        exe.execute();
+        executor::execute("ls -l -h -s -r");
     }
 
     #[test]
     fn test_ls_tree() {
-        let exe = Executor::new("ls --tree --depth=2");
-
-        assert_eq!(exe.get_cmds().len(), 1);
-
-        exe.execute();
+        executor::execute("ls --tree --depth=2");
     }
 
     #[test]
@@ -37,10 +28,6 @@ mod executor_test {
 
     #[test]
     fn test_grep_cmd() {
-        let exe = Executor::new("grep -i -v -c \"col\" Cargo.toml");
-
-        assert_eq!(exe.get_cmds().len(), 1);
-
-        exe.execute();
+        executor::execute("grep -i -v -c \"col\" Cargo.toml");
     }
 }
