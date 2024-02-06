@@ -18,6 +18,7 @@ pub fn run() {
         print!("> ");
         io::stdout().flush().unwrap();
 
+        // Get input from user
         let mut input = String::new();
         io::stdin().read_line(&mut input).unwrap();
 
@@ -25,7 +26,6 @@ pub fn run() {
             break;
         }
 
-        let executor = executor::Executor::new(&input);
-        executor.execute();
+        executor::execute(&input)
     }
 }
