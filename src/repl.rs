@@ -3,7 +3,7 @@ use std::{
     io::{self, BufReader, Read, Write},
 };
 
-use crate::executor::*;
+use crate::executor;
 
 pub fn run() {
     // Print the logo

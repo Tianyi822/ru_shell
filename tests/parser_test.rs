@@ -1,8 +1,8 @@
 #[cfg(test)]
 mod parser_test {
     use ru_shell::parser::ast::ExeCommandAstNode;
-    use ru_shell::parser::parser::Parser;
-    use ru_shell::parser::CommandAstNode;
+    use ru_shell::parser::command_ast::{CommandAstNode, CommandType};
+    use ru_shell::parser::Parser;
     use ru_shell::token::token::{Token, TokenType};
 
     #[test]
@@ -33,7 +33,7 @@ mod parser_test {
             assert_eq!(command.token_type(), &TokenType::Ls);
             assert_eq!(
                 command.cmd_type(),
-                &ru_shell::parser::CommandType::ExtCommand
+                &CommandType::ExtCommand
             );
             assert_eq!(command.get_option("-l"), Some(""));
             assert_eq!(command.get_option("-h"), Some(""));
@@ -50,7 +50,7 @@ mod parser_test {
             assert_eq!(command.token_type(), &TokenType::Cd);
             assert_eq!(
                 command.cmd_type(),
-                &ru_shell::parser::CommandType::ExtCommand
+                &CommandType::ExtCommand,
             );
         });
     }
@@ -60,7 +60,7 @@ mod parser_test {
         let parser = Parser::new("ls -l -h | cd | ls --tree --depth=3");
 
         let cmd = parser.iter().next().unwrap();
-        assert_eq!(cmd.cmd_type(), &ru_shell::parser::CommandType::ChainCommand);
+        assert_eq!(cmd.cmd_type(), &CommandType::ChainCommand);
         assert_eq!(cmd.token_type(), &TokenType::Pipe);
         assert_eq!(cmd.get_source().unwrap().token_type(), &TokenType::Ls);
         assert_eq!(
@@ -88,7 +88,7 @@ mod parser_test {
         // println!("{:#?}", parser);
 
         let cmd = parser.iter().next().unwrap();
-        assert_eq!(cmd.cmd_type(), &ru_shell::parser::CommandType::ExtCommand);
+        assert_eq!(cmd.cmd_type(), &CommandType::ExtCommand);
         assert_eq!(cmd.token_type(), &TokenType::Grep);
         assert_eq!(cmd.get_option("-i"), Some(""));
         assert_eq!(cmd.get_option("-n"), Some(""));

@@ -6,7 +6,8 @@ use std::{
 
 use colored::Colorize;
 
-use crate::{executor::Command, parser::CommandAstNode};
+use crate::executor::Command;
+use crate::parser::command_ast::CommandAstNode;
 
 /*
 The 'grep' command is used to search for a specific string in a file or files.
