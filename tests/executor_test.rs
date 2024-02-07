@@ -2,7 +2,7 @@
 mod executor_test {
     use std::env;
 
-    use ru_shell::executor::*;
+    use ru_shell::executor::{self};
 
     #[test]
     fn test_new_executor() {
