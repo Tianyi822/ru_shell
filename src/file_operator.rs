@@ -1,4 +1,5 @@
 use std::{fs::File, io::BufWriter};
+use std::io::Write;
 
 pub struct FileOperator {
     // The buffer writer for file
@@ -56,5 +57,20 @@ impl FileOperator {
         // Create buffer writer
         self.writer = Some(BufWriter::new(file));
         self.is_open = true;
+    }
+
+
+    // Write data to file
+    pub fn close(&mut self) -> Result<(), std::io::Error> {
+        // Flush and drop the writer
+        if self.is_open {
+            self.writer.as_mut().unwrap().flush()?;
+            self.writer = None;
+        }
+
+        // Set the status of file to close
+        self.is_open = false;
+
+        Ok(())
     }
 }
