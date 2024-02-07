@@ -16,4 +16,12 @@ mod file_operator_test {
         file_operator.ready();
         assert_eq!(file_operator.is_open, true);
     }
+
+    #[test]
+    fn test_close_file_operator() {
+        let mut file_operator = FileOperator::new("test.txt", false, false, 1024);
+        file_operator.ready();
+        let _ = file_operator.close();
+        assert_eq!(file_operator.is_open, false);
+    }
 }
