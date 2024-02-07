@@ -59,6 +59,7 @@ impl FileOperator {
         self.is_open = true;
     }
 
+
     // Write data to file
     pub fn close(&mut self) -> Result<(), std::io::Error> {
         // Flush and drop the writer
