@@ -56,22 +56,26 @@ impl GrepCmd {
     }
 
     // TODO: Implement grep
-    fn grep(&self) -> Vec<String> {
+    fn grep(&self) -> Vec<(u32, String)> {
         // Collect the results that contain the pattern str.
-        let mut result: Vec<String> = Vec::new();
+        let mut result: Vec<(u32, String)> = Vec::new();
 
         // Open the file
         let file = File::open(&self.file).unwrap();
         let reader = io::BufReader::new(file);
 
         // Read the file line by line
+        let mut line_num = 1;
         for line in reader.lines() {
             match line {
                 Ok(line) => {
-                    self.deal_line(line).map(|line: String| result.push(line));
+                    self.deal_line(line).map(|line: String| {
+                        result.push((line_num, line));
+                    });
                 }
                 Err(e) => panic!("Error: {}", e),
             }
+            line_num += 1;
         }
 
         result
@@ -106,12 +110,12 @@ impl GrepCmd {
 
 impl Command for GrepCmd {
     fn execute(&self) {
-        let result = self.grep();
+        let results = self.grep();
 
         if self.count {
-            println!("{}: {}", self.file.display(), result.len());
+            println!("{}: {}", self.file.display(), results.len());
         } else {
-            for line in result {
+            for (_, line) in results {
                 println!("{}", line);
             }
         }
