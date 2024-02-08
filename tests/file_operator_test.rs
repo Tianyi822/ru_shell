@@ -28,4 +28,12 @@ mod file_operator_test {
             file_operator.write(&msg).unwrap();
         }
     }
+
+    #[test]
+    fn test_close_file_operator() {
+        let mut file_operator = FileOperator::new(FILE_PATH, false, false, 1024);
+        file_operator.ready();
+        file_operator.close();
+        assert_eq!(file_operator.is_open, false);
+    }
 }

@@ -61,6 +61,19 @@ impl FileOperator {
         self.is_open = true;
     }
 
+    // Close the file and flush the buffer writer
+    pub fn close(&mut self) {
+        if let Some(writer) = &mut self.writer {
+            writer.flush().expect("Failed to flush")
+        }
+
+        self.writer = None;
+
+        if self.is_open {
+            self.is_open = false;
+        }
+    }
+
     // Write string data to file
     pub fn write(&mut self, data: &str) -> io::Result<()> {
         self.write_byte(data.as_bytes())
