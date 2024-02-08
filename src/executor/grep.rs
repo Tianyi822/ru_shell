@@ -120,6 +120,7 @@ impl Command for GrepCmd {
             println!("{}: {}", self.file.display(), results.len());
         } else {
             if self.show_line_number {
+                // If the -n option is specified, display the line number before each matching line
                 for (line_num, line) in results {
                     println!("{}: {}", line_num, line);
                 }
