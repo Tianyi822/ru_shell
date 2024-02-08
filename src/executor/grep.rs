@@ -5,6 +5,7 @@ use std::{
 };
 
 use colored::Colorize;
+use regex::Regex;
 
 use crate::executor::Command;
 use crate::parser::command_ast::CommandAstNode;
@@ -73,7 +74,7 @@ impl GrepCmd {
         for line in reader.lines() {
             match line {
                 Ok(line) => {
-                    self.deal_line(line).map(|line: String| {
+                    self.match_line(line).map(|line: String| {
                         result.push((line_num, line));
                     });
                 }
@@ -85,20 +86,26 @@ impl GrepCmd {
         result
     }
 
-    fn deal_line(&self, mut line: String) -> Option<String> {
+    // Match the line with the pattern string
+    fn match_line(&self, mut line: String) -> Option<String> {
+        let mut pattern = self.pattern.clone();
         // Check if the line contains the pattern string
         if self.ignore_case {
             line = line.to_lowercase();
+            pattern = pattern.to_lowercase();
         }
+
+        // Create a regex pattern
+        let re = Regex::new(&pattern).unwrap();
 
         if self.invert_match {
             // If the line contains the pattern string, return None
-            if line.contains(&self.pattern) {
+            if re.is_match(&line) {
                 return None;
             }
         } else {
             // If the line does not contain the pattern string, return None
-            if !line.contains(&self.pattern) {
+            if !re.is_match(&line) {
                 return None;
             } else {
                 // If the line contains the pattern string, colorize the pattern string
