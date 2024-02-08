@@ -1,4 +1,7 @@
-use std::{fs::File, io::BufWriter};
+use std::{
+    fs::{File, OpenOptions},
+    io::{self, BufWriter, Write},
+};
 
 pub struct FileOperator {
     // The buffer writer for file
@@ -41,20 +44,44 @@ impl FileOperator {
             return;
         }
 
-        // Open file
-        let file = match File::open(&self.path) {
-            Ok(f) => {
-                if !self.overwrite {
-                    f
-                } else {
-                    File::create(&self.path).unwrap()
-                }
-            }
-            Err(_) => File::create(&self.path).unwrap(),
+        let file = if !self.overwrite {
+            // Attempt to open the file in append mode; if the file does not exist, create it.
+            OpenOptions::new()
+                .append(true)
+                .create(true) // Create the file if it does not exist
+                .open(&self.path)
+                .expect("Unable to open or create file")
+        } else {
+            // If overwriting is needed, directly create the file. This will clear the file if it already exists.
+            File::create(&self.path).unwrap()
         };
 
         // Create buffer writer
         self.writer = Some(BufWriter::new(file));
         self.is_open = true;
+    }
+
+    // Write string data to file
+    pub fn write(&mut self, data: &str) -> io::Result<()> {
+        self.write_byte(data.as_bytes())
+    }
+
+    // Write byte data to file
+    // This is the real write function to write data to file
+    fn write_byte(&mut self, data: &[u8]) -> io::Result<()> {
+        if !self.is_open {
+            self.ready();
+        }
+
+        match &mut self.writer {
+            Some(writer) => writer.write_all(data),
+            None => {
+                self.close();
+                Err(io::Error::new(
+                    io::ErrorKind::Other,
+                    "The file is not ready to write",
+                ))
+            }
+        }
     }
 }
