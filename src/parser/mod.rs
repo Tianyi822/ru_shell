@@ -1,4 +1,5 @@
-use std::cell::RefCell;
+use std::cell::{Cell, RefCell};
+use std::rc::Rc;
 
 use crate::lexer::Lexer;
 use crate::parser::ast::{ChainCommandAstNode, ExeCommandAstNode};
@@ -33,6 +34,11 @@ pub struct Parser {
 
     // The command AST that the parser will build.
     command_ast: RefCell<Vec<Box<dyn CommandAstNode>>>,
+
+    // Collect errors that occur during parsing.
+    // 0: the error cmd
+    // 1: the error message
+    errors: Rc<RefCell<Vec<(String, String)>>>,
 }
 
 pub struct ParserIterator<'a> {
@@ -64,6 +70,7 @@ impl Parser {
             lexer: Lexer::new(input),
             command_ast: RefCell::new(Vec::new()),
             cur_token: RefCell::new(None),
+            errors: Rc::new(RefCell::new(Vec::new())),
         };
 
         // Initialize the current token.
