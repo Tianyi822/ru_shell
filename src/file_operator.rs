@@ -60,7 +60,7 @@ impl FileOperator {
         self.writer = Some(BufWriter::new(file));
         self.is_open = true;
     }
-
+  
     // Close the file and flush the buffer writer
     pub fn close(&mut self) {
         if let Some(writer) = &mut self.writer {
