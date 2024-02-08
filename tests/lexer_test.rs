@@ -226,4 +226,27 @@ mod test {
             assert_eq!(token.literal(), next_token.literal());
         }
     }
+
+    #[test]
+    fn test_get_tokens_by_range() {
+        let l = Lexer::new("ls -l -h -t");
+
+        let tokens = vec![
+            Token::new(TokenType::Ls, "ls".to_string()),
+            Token::new(TokenType::ShortParam, "-l".to_string()),
+            Token::new(TokenType::ShortParam, "-h".to_string()),
+            Token::new(TokenType::ShortParam, "-t".to_string()),
+            Token::new(TokenType::Eof, "".to_string()),
+        ];
+
+        for token in tokens.iter() {
+            let next_token = l.next_token().unwrap();
+
+            assert_eq!(*token.token_type(), *next_token.token_type());
+            assert_eq!(token.literal(), next_token.literal());
+        }
+
+        let s = l.joint_tokens_to_str_by_range(0, 2);
+        assert_eq!(s, "ls -l");
+    }
 }

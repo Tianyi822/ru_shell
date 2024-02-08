@@ -42,6 +42,22 @@ impl Lexer {
         l
     }
 
+    // Get the tokens by range.
+    pub fn joint_tokens_to_str_by_range(&self, start: u32, end: u32) -> String {
+        let tokens = self.tokens.borrow();
+        let mut result = String::new();
+
+        // Iterate the tokens and get the literal of token.
+        for i in start..end {
+            result.push_str(tokens[i as usize].literal());
+            if i < end - 1 {
+                result.push(' ');
+            }
+        }
+
+        result
+    }
+
     // Clear the lexer data.
     pub fn clear(&self) {
         self.tokens.borrow_mut().clear();
