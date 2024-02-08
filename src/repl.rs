@@ -3,9 +3,25 @@ use std::{
     io::{self, BufReader, Read, Write},
 };
 
-use crate::executor;
+use dirs_next::home_dir;
+
+use crate::{executor, file_operator::FileOperator};
 
 pub fn run() {
+    // Create history file
+    let user_home_path = match home_dir() {
+        Some(path) => path.to_str().unwrap().to_string(),
+        None => {
+            println!("Unable to get home directory");
+            return;
+        }
+    };
+    let mut history_file = FileOperator::new(
+        &format!("{}/.rusty_shell_history", user_home_path),
+        false,
+        1024,
+    );
+
     // Print the logo
     let file = File::open("asset/logo.txt").unwrap();
     let mut buf_reader = BufReader::new(file);
@@ -21,6 +37,14 @@ pub fn run() {
         // Get input from user
         let mut input = String::new();
         io::stdin().read_line(&mut input).unwrap();
+
+        // Write the input to history file
+        match history_file.write(&input) {
+            Ok(_) => {}
+            Err(e) => {
+                println!("Unable to write to history file: {}", e);
+            }
+        }
 
         if input.trim() == "exit" {
             break;
