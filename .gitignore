@@ -1,5 +1,6 @@
 # ignore cargo build target
 /target
+/tests/resources
 
 # ignore idea's project files
 /.idea
