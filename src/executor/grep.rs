@@ -42,6 +42,9 @@ pub struct GrepCmd {
 
     // This option outputs only the number of matching lines, not the content of the matches themselves.
     count: bool,
+
+    // This option displays the line number in the file before each matching line.
+    show_line_number: bool,
 }
 
 impl GrepCmd {
@@ -52,6 +55,7 @@ impl GrepCmd {
             ignore_case: true,
             invert_match: false,
             count: true,
+            show_line_number: true,
         }
     }
 
@@ -115,8 +119,14 @@ impl Command for GrepCmd {
         if self.count {
             println!("{}: {}", self.file.display(), results.len());
         } else {
-            for (_, line) in results {
-                println!("{}", line);
+            if self.show_line_number {
+                for (line_num, line) in results {
+                    println!("{}: {}", line_num, line);
+                }
+            } else {
+                for (_, line) in results {
+                    println!("{}", line);
+                }
             }
         }
     }
@@ -161,6 +171,11 @@ impl From<Box<dyn CommandAstNode>> for GrepCmd {
         match cmd.get_option("-c") {
             Some(_) => grep_cmd.count = true,
             None => grep_cmd.count = false,
+        }
+
+        match cmd.get_option("-n") {
+            Some(_) => grep_cmd.show_line_number = true,
+            None => grep_cmd.show_line_number = false,
         }
 
         grep_cmd
