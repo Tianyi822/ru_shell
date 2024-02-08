@@ -15,9 +15,6 @@ pub struct FileOperator {
     // If file exists, the flag to indicate whether the file need to be covered
     pub overwrite: bool,
 
-    // The flag to indicate whether the file need to be compressed
-    pub need_compress: bool,
-
     // The max size of file
     pub max_size: u32,
 
@@ -26,12 +23,11 @@ pub struct FileOperator {
 }
 
 impl FileOperator {
-    pub fn new(path: &str, overwrite: bool, need_compress: bool, max_size: u32) -> FileOperator {
+    pub fn new(path: &str, overwrite: bool, max_size: u32) -> FileOperator {
         FileOperator {
             writer: None,
             is_open: false,
             overwrite,
-            need_compress,
             max_size,
             path: path.to_string(),
         }
