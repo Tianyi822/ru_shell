@@ -32,13 +32,17 @@ pub struct Parser {
     // The current token that the parser is looking at.
     cur_token: RefCell<Option<Token>>,
 
+    // Use to get command and its parameter from lexer.
+    cmd_start_index: Cell<u32>,
+    cmd_end_index: Cell<u32>,
+
     // The command AST that the parser will build.
     command_ast: RefCell<Vec<Box<dyn CommandAstNode>>>,
 
     // Collect errors that occur during parsing.
     // 0: the error cmd
     // 1: the error message
-    errors: Rc<RefCell<Vec<(String, String)>>>,
+    errors: Rc<RefCell<Vec<String>>>,
 }
 
 pub struct ParserIterator<'a> {
@@ -70,6 +74,8 @@ impl Parser {
             lexer: Lexer::new(input),
             command_ast: RefCell::new(Vec::new()),
             cur_token: RefCell::new(None),
+            cmd_start_index: Cell::new(0),
+            cmd_end_index: Cell::new(0),
             errors: Rc::new(RefCell::new(Vec::new())),
         };
 
@@ -95,7 +101,21 @@ impl Parser {
 
     // Parse the command and return the AST.
     fn parse(&self) {
+        if self.cur_token.borrow().is_none() {
+            return;
+        }
+
+        if self.cur_token.borrow().clone().unwrap().token_type() == &TokenType::Eof {
+            return;
+        }
+
         loop {
+            // Check if the current token is a command.
+            if !self.check_wether_is_command() {
+                self.collect_error("Invalid command");
+                break;
+            }
+
             // Parse the corresponding command based on the token type
             // and return the parsed AST (Abstract Syntax Tree) node.
             let ast_node: Box<dyn CommandAstNode> = match self.parse_exe_cmd() {
@@ -108,10 +128,41 @@ impl Parser {
         }
     }
 
+    // Collect the errors that occur during parsing.
+    fn collect_error(&self, err_msg: &str) {
+        // Get the error command and build error message.
+        let err_tok_str = self
+            .lexer
+            .joint_tokens_to_str_by_range(self.cmd_start_index.get(), self.cmd_end_index.get());
+        let msg = format!("{}: {}", err_tok_str, err_msg);
+
+        // Store the error message.
+        self.errors.borrow_mut().push(msg);
+
+        // Update the start index of the command.
+        self.cmd_start_index.set(self.cmd_end_index.get());
+    }
+
+    // Get the errors that were collected.
+    pub fn errors(&self) -> Vec<String> {
+        self.errors.borrow().clone()
+    }
+
+    // Check if the current token is a command.
+    fn check_wether_is_command(&self) -> bool {
+        let cur_token = self.cur_token.borrow().clone();
+        match cur_token {
+            Some(ref token) => match token.token_type() {
+                TokenType::Ls | TokenType::Cd | TokenType::Grep => true,
+                _ => false,
+            },
+            None => false,
+        }
+    }
+
     // Store the AST node.
     fn store_ast_node(&self, ast_node: Box<dyn CommandAstNode>) {
-        let mut command_ast = self.command_ast.borrow_mut();
-        command_ast.push(ast_node);
+        self.command_ast.borrow_mut().push(ast_node);
     }
 
     // Parse the command whose type is execute command.
@@ -412,5 +463,8 @@ impl Parser {
             Some(t) => *cur_token = Some(t),
             None => *cur_token = None,
         }
+
+        let end_index = self.cmd_end_index.get();
+        self.cmd_end_index.set(end_index + 1);
     }
 }
