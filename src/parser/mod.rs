@@ -212,7 +212,7 @@ impl Parser {
         }
     }
 
-    // Parse ls command
+    // Parse execute command
     fn parse_exe_command(&self) -> Box<dyn CommandAstNode> {
         let cur_token = self.cur_token.borrow().clone();
 
