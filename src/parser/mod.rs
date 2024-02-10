@@ -154,9 +154,12 @@ impl Parser {
         match cur_token {
             Some(ref token) => match token.token_type() {
                 TokenType::Ls | TokenType::Cd | TokenType::Grep => true,
+                // This means the end of the command.
+                TokenType::Eof => true,
                 _ => false,
             },
-            None => false,
+            // This is equivalent to TokenType::Eof.
+            None => true,
         }
     }
 
