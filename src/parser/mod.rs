@@ -239,14 +239,21 @@ impl Parser {
         if exe_command.token_type() == &TokenType::Grep {
             match self.parse_pattern() {
                 Some(paths) => exe_command.add_value(paths),
-                None => (),
+                None => {
+                    return Box::new(exe_command);
+                }
             };
         }
 
         // Parse the paths of the ls command.
         match self.parse_paths() {
             Some(paths) => exe_command.set_values(paths),
-            None => (),
+            None => {
+                if exe_command.token_type() == &TokenType::Grep {
+                    self.collect_error("Grep command needs a path");
+                    return Box::new(exe_command);
+                }
+            }
         };
 
         match self.parse_chain_cmd() {
@@ -273,6 +280,7 @@ impl Parser {
                 None => return None,
             };
         } else {
+            self.collect_error("Missing pattern. You can use `\"` to quote the pattern.");
             return None;
         }
 
@@ -301,6 +309,7 @@ impl Parser {
         if *cur_token.token_type() == TokenType::Quote {
             self.next_token();
         } else {
+            self.collect_error("Invalid pattern, missing right quotation mark.");
             return None;
         }
 
@@ -338,7 +347,11 @@ impl Parser {
             }
         }
 
-        Some(paths)
+        if paths.is_empty() {
+            return None;
+        } else {
+            return Some(paths);
+        }
     }
 
     // Parse the path of the command.
