@@ -102,4 +102,52 @@ mod parser_test {
             println!("{}", err);
         }
     }
+
+    #[test]
+    fn test_error_grep_cmd_without_pattern() {
+        let parser = Parser::new("grep -i -n -r");
+
+        let errs = parser.errors();
+
+        assert_eq!(errs.len(), 1);
+        for err in errs {
+            println!("{}", err);
+        }
+    }
+
+    #[test]
+    fn test_error_grep_cmd_without_path() {
+        let parser = Parser::new("grep -i -n -r \"main\"");
+
+        let errs = parser.errors();
+
+        assert_eq!(errs.len(), 1);
+        for err in errs {
+            println!("{}", err);
+        }
+    }
+
+    #[test]
+    fn test_error_grep_cmd_without_left_quotation_mark_of_pattern() {
+        let parser = Parser::new("grep -i -n -r main");
+
+        let errs = parser.errors();
+
+        assert_eq!(errs.len(), 1);
+        for err in errs {
+            println!("{}", err);
+        }
+    }
+
+    #[test]
+    fn test_error_grep_cmd_without_right_quotation_mark_of_pattern() {
+        let parser = Parser::new("grep -i -n col Cargo.toml");
+
+        let errs = parser.errors();
+
+        assert_eq!(errs.len(), 1);
+        for err in errs {
+            println!("{}", err);
+        }
+    }
 }
