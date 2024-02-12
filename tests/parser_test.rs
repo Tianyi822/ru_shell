@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod parser_test {
-    use ru_shell::parser::ast::ExeCommandAstNode;
-    use ru_shell::parser::command_ast::{CommandAstNode, CommandType};
+    use ru_shell::parser::cmds_ast_node::ExeCommandAstNode;
+    use ru_shell::parser::ast_node_trait::{CommandAstNode, CommandType};
     use ru_shell::parser::Parser;
     use ru_shell::token::token::{Token, TokenType};
 
