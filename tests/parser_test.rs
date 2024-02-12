@@ -31,10 +31,7 @@ mod parser_test {
 
         parser.iter().for_each(|command| {
             assert_eq!(command.token_type(), &TokenType::Ls);
-            assert_eq!(
-                command.cmd_type(),
-                &CommandType::ExtCommand
-            );
+            assert_eq!(command.cmd_type(), &CommandType::ExtCommand);
             assert_eq!(command.get_option("-l"), Some(""));
             assert_eq!(command.get_option("-h"), Some(""));
             assert_eq!(command.get_option("--tree"), Some(""));
@@ -48,10 +45,7 @@ mod parser_test {
 
         parser.iter().for_each(|command| {
             assert_eq!(command.token_type(), &TokenType::Cd);
-            assert_eq!(
-                command.cmd_type(),
-                &CommandType::ExtCommand,
-            );
+            assert_eq!(command.cmd_type(), &CommandType::ExtCommand,);
         });
     }
 
@@ -95,5 +89,65 @@ mod parser_test {
         assert_eq!(cmd.get_option("-r"), Some(""));
         assert_eq!(cmd.get_values().unwrap()[0], "main");
         assert_eq!(cmd.get_values().unwrap()[1], "~/Programs/Rust/ru-shell");
+    }
+
+    #[test]
+    fn test_error_grammar() {
+        let parser = Parser::new("-l -h");
+
+        let errs = parser.errors();
+
+        assert_eq!(errs.len(), 1);
+        for err in errs {
+            println!("{}", err);
+        }
+    }
+
+    #[test]
+    fn test_error_grep_cmd_without_pattern() {
+        let parser = Parser::new("grep -i -n -r");
+
+        let errs = parser.errors();
+
+        assert_eq!(errs.len(), 1);
+        for err in errs {
+            println!("{}", err);
+        }
+    }
+
+    #[test]
+    fn test_error_grep_cmd_without_path() {
+        let parser = Parser::new("grep -i -n -r \"main\"");
+
+        let errs = parser.errors();
+
+        assert_eq!(errs.len(), 1);
+        for err in errs {
+            println!("{}", err);
+        }
+    }
+
+    #[test]
+    fn test_error_grep_cmd_without_left_quotation_mark_of_pattern() {
+        let parser = Parser::new("grep -i -n -r main");
+
+        let errs = parser.errors();
+
+        assert_eq!(errs.len(), 1);
+        for err in errs {
+            println!("{}", err);
+        }
+    }
+
+    #[test]
+    fn test_error_grep_cmd_without_right_quotation_mark_of_pattern() {
+        let parser = Parser::new("grep -i -n col Cargo.toml");
+
+        let errs = parser.errors();
+
+        assert_eq!(errs.len(), 1);
+        for err in errs {
+            println!("{}", err);
+        }
     }
 }
