@@ -8,7 +8,7 @@ use colored::Colorize;
 use regex::Regex;
 
 use crate::executor::Command;
-use crate::parser::command_ast::CommandAstNode;
+use crate::parser::ast_node_trait::CommandAstNode;
 
 /*
 The 'grep' command is used to search for a specific string in a file or files.

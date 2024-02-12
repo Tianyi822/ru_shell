@@ -1,14 +1,14 @@
-use std::cell::{Cell, RefCell};
+use std::cell::RefCell;
 use std::rc::Rc;
 
 use crate::lexer::Lexer;
-use crate::parser::ast::{ChainCommandAstNode, ExeCommandAstNode};
-use crate::parser::command_ast::CommandAstNode;
+use crate::parser::cmds_ast_node::{ChainCommandAstNode, ExeCommandAstNode};
+use crate::parser::ast_node_trait::CommandAstNode;
 use crate::token::token::Token;
 use crate::token::token::TokenType;
 
-pub mod ast;
-pub mod command_ast;
+pub mod cmds_ast_node;
+pub mod ast_node_trait;
 
 // Since the syntax of command-line interfaces is simpler than that of programming languages,
 // this parser analyzes and processes in the order of tokens.

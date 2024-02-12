@@ -9,7 +9,7 @@ use std::{
 use colored::{ColoredString, Colorize};
 
 use crate::executor::Command;
-use crate::parser::command_ast::CommandAstNode;
+use crate::parser::ast_node_trait::CommandAstNode;
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 enum FileType {

@@ -2,7 +2,7 @@ use std::fmt::Debug;
 
 use crate::executor::grep::GrepCmd;
 use crate::executor::ls::LsCmd;
-use crate::parser::command_ast::{CommandAstNode, CommandType};
+use crate::parser::ast_node_trait::{CommandAstNode, CommandType};
 use crate::parser::Parser;
 use crate::token::token::TokenType;
 

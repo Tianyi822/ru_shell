@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::parser::command_ast::CommandType;
+use crate::parser::ast_node_trait::CommandType;
 use crate::token::token::{Token, TokenType};
 
 use super::CommandAstNode;
