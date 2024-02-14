@@ -1,9 +1,10 @@
-use std::fmt::Debug;
+use std::rc::Rc;
 
 use crate::executor::grep::GrepCmd;
 use crate::executor::ls::LsCmd;
 use crate::parser::ast_node_trait::{CommandAstNode, CommandType};
 use crate::parser::Parser;
+use crate::stream::Stream;
 use crate::token::token::TokenType;
 
 pub mod grep;
@@ -13,13 +14,16 @@ pub mod ls;
 // the status of the command after it has been parsed.
 // The value of status is derived from a combination of one or more options,
 // indication hao the command should be executed.
-pub trait Command: Debug {
+pub trait Command {
     // Execute command
     fn execute(&self);
+
+    // Add stream to the command
+    fn add_stream(&mut self, stream: Rc<dyn Stream>);
 }
 
 // Execute all commands
-pub fn execute(cmd: &str) {
+pub fn execute(cmd: &str, stream: Rc<dyn Stream>) {
     // Create new Parser
     let parser = Parser::new(cmd);
 
@@ -28,10 +32,12 @@ pub fn execute(cmd: &str) {
 
     // Analyze the AST and save the command into an array
     for cmd in parser.iter() {
-        let cmd = match cmd.cmd_type() {
+        let mut cmd = match cmd.cmd_type() {
             CommandType::ExtCommand => analyze_exe_node(cmd),
             CommandType::ChainCommand => analyze_chain_node(cmd),
         };
+
+        cmd.add_stream(stream.clone());
 
         cmds.push(cmd);
     }

@@ -1,11 +1,12 @@
 use std::{
     fs::File,
     io::{self, BufReader, Read, Write},
+    rc::Rc,
 };
 
 use dirs_next::home_dir;
 
-use crate::{executor, file_operator::FileOperator};
+use crate::{executor, file_operator::FileOperator, stream::console_stream::ConsoleSteam};
 
 pub fn run() {
     // Create history file
@@ -30,6 +31,9 @@ pub fn run() {
     println!("{}", logo);
     println!("Welcome to the Rusty Shell!");
 
+    // Create a stream for the console
+    let console_stream = Rc::new(ConsoleSteam::new());
+
     loop {
         print!("> ");
         io::stdout().flush().unwrap();
@@ -50,6 +54,6 @@ pub fn run() {
             break;
         }
 
-        executor::execute(&input)
+        executor::execute(&input, console_stream.clone());
     }
 }

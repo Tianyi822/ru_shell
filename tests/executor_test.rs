@@ -1,17 +1,19 @@
 #[cfg(test)]
 mod executor_test {
-    use std::env;
+    use std::{env, rc::Rc};
 
-    use ru_shell::executor::{self};
+    use ru_shell::{executor, stream::console_stream::ConsoleSteam};
 
     #[test]
     fn test_new_executor() {
-        executor::execute("ls -l -h -s -r");
+        let console_stream = Rc::new(ConsoleSteam::new());
+        executor::execute("ls -l -h -s -r", console_stream.clone());
     }
 
     #[test]
     fn test_ls_tree() {
-        executor::execute("ls --tree --depth=2");
+        let console_stream = Rc::new(ConsoleSteam::new());
+        executor::execute("ls --tree --depth=2", console_stream.clone());
     }
 
     #[test]
@@ -28,6 +30,11 @@ mod executor_test {
 
     #[test]
     fn test_grep_cmd() {
-        executor::execute("grep -i -v -c \"col\" Cargo.toml");
+        let console_stream = Rc::new(ConsoleSteam::new());
+        executor::execute("grep -i -v -c \"col\" Cargo.toml", console_stream.clone());
+        println!("======================");
+        executor::execute("grep -i -v \"col\" Cargo.toml", console_stream.clone());
+        println!("======================");
+        executor::execute("grep -i \"col\" Cargo.toml", console_stream.clone());
     }
 }

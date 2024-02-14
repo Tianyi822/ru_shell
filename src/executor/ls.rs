@@ -4,12 +4,16 @@ use std::{
     fs,
     os::unix::fs::{FileTypeExt, MetadataExt, PermissionsExt},
     path::PathBuf,
+    rc::Rc,
 };
 
 use colored::{ColoredString, Colorize};
 
-use crate::executor::Command;
 use crate::parser::ast_node_trait::CommandAstNode;
+use crate::{
+    executor::Command,
+    stream::{self, Stream},
+};
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 enum FileType {
@@ -35,7 +39,6 @@ struct FileInfo {
     is_hidden: bool,
 }
 
-#[derive(Debug)]
 // Ls command
 pub struct LsCmd {
     // show details of files and directories
@@ -80,6 +83,8 @@ pub struct LsCmd {
     // Attention: You must use #[arg(skip)] to skip the hidden field,
     // otherwise it will be shown in help message, and even panic will appear in the program!!!
     status: u8,
+
+    stream: Option<Rc<dyn Stream>>,
 }
 
 impl LsCmd {
@@ -95,6 +100,7 @@ impl LsCmd {
             depth: 10,
             paths: Vec::new(),
             status: 0,
+            stream: None,
         }
     }
 
@@ -131,7 +137,10 @@ impl LsCmd {
                 continue;
             }
 
-            print!("{:<20}", self.color_file_names(&file));
+            self.stream
+                .as_ref()
+                .unwrap()
+                .output(format!("{:<20}", self.color_file_names(&file)));
         }
         // Add a new line at the end of the output.
         println!();
@@ -152,8 +161,8 @@ impl LsCmd {
 
             let file_name_with_color = self.color_file_names(&file);
 
-            println!(
-                "{} {:>3} {:>8} {:>8} {:>8} {:>20} {}",
+            self.stream.as_ref().unwrap().output(format!(
+                "{} {:>3} {:>8} {:>8} {:>8} {:>20} {}\n\r",
                 file.permissions,
                 file.link,
                 file.owner,
@@ -161,7 +170,7 @@ impl LsCmd {
                 size,
                 file.modified_time,
                 file_name_with_color
-            );
+            ));
         }
     }
 
@@ -174,12 +183,12 @@ impl LsCmd {
     #[cfg(unix)]
     fn show_as_tree_recursively(&self, path: &std::path::PathBuf, depth: u8) {
         if !path.exists() {
-            println!(
-                "{:indent$}| - {}",
+            self.stream.as_ref().unwrap().output(format!(
+                "{:indent$}| - {}\n\r",
                 "",
                 "No such file or directory".red(),
                 indent = (depth * 5) as usize
-            );
+            ));
             return;
         }
 
@@ -194,24 +203,24 @@ impl LsCmd {
         let file_name_with_color = self.color_file_names(&file_info);
 
         // Print file name with color.
-        println!(
-            "{:indent$}| - {}",
+        self.stream.as_ref().unwrap().output(format!(
+            "{:indent$}| - {}\n\r",
             "",
             file_name_with_color,
             indent = (depth * 5) as usize
-        );
+        ));
 
         // If the file is a directory, get all files and directories in it.
         if file_info.file_type == FileType::Dir {
             let paths = match fs::read_dir(path) {
                 Ok(paths) => paths,
                 Err(_) => {
-                    println!(
-                        "{:indent$}| - {}",
+                    self.stream.as_ref().unwrap().output(format!(
+                        "{:indent$}| - {}\n\r",
                         "",
                         "Permission denied".red(),
                         indent = (depth * 5) as usize
-                    );
+                    ));
                     return;
                 }
             };
@@ -552,5 +561,9 @@ impl Command for LsCmd {
                 _ => self.show_names(&files),
             };
         });
+    }
+
+    fn add_stream(&mut self, stream: Rc<dyn stream::Stream>) {
+        self.stream = Some(stream);
     }
 }
