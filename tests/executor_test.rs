@@ -30,6 +30,11 @@ mod executor_test {
 
     #[test]
     fn test_grep_cmd() {
-        executor::execute("grep -i -v -c \"col\" Cargo.toml");
+        let console_stream = Rc::new(ConsoleSteam::new());
+        executor::execute("grep -i -v -c \"col\" Cargo.toml", console_stream.clone());
+        println!("======================");
+        executor::execute("grep -i -v \"col\" Cargo.toml", console_stream.clone());
+        println!("======================");
+        executor::execute("grep -i \"col\" Cargo.toml", console_stream.clone());
     }
 }

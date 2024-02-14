@@ -2,13 +2,14 @@ use std::{
     fs::File,
     io::{self, BufRead},
     path::PathBuf,
+    rc::Rc,
 };
 
 use colored::Colorize;
 use regex::Regex;
 
-use crate::executor::Command;
 use crate::parser::ast_node_trait::CommandAstNode;
+use crate::{executor::Command, stream};
 
 /*
 The 'grep' command is used to search for a specific string in a file or files.
@@ -27,7 +28,6 @@ These are the options that the 'grep' command supports:
     -B num: Show the matching line and the previous num lines of content.
     -C num or --context=num: Show the matching line and num lines of content before and after it, providing more context.
 */
-#[derive(Debug)]
 pub struct GrepCmd {
     // The pattern to search for in the file
     pattern: String,
@@ -46,6 +46,8 @@ pub struct GrepCmd {
 
     // This option displays the line number in the file before each matching line.
     show_line_number: bool,
+
+    stream: Option<Rc<dyn stream::Stream>>,
 }
 
 impl GrepCmd {
@@ -57,6 +59,7 @@ impl GrepCmd {
             invert_match: false,
             count: true,
             show_line_number: true,
+            stream: None,
         }
     }
 
@@ -124,19 +127,30 @@ impl Command for GrepCmd {
         let results = self.grep();
 
         if self.count {
-            println!("{}: {}", self.file.display(), results.len());
+            self.stream.as_ref().unwrap().output(format!(
+                "{}: {}\n",
+                self.file.display(),
+                results.len()
+            ));
         } else {
             if self.show_line_number {
                 // If the -n option is specified, display the line number before each matching line
                 for (line_num, line) in results {
-                    println!("{}: {}", line_num, line);
+                    self.stream
+                        .as_ref()
+                        .unwrap()
+                        .output(format!("{}: {}\n", line_num, line));
                 }
             } else {
                 for (_, line) in results {
-                    println!("{}", line);
+                    self.stream.as_ref().unwrap().output(format!("{}\n", line));
                 }
             }
         }
+    }
+
+    fn add_stream(&mut self, stream: Rc<dyn stream::Stream>) {
+        self.stream = Some(stream);
     }
 }
 
