@@ -252,12 +252,14 @@ mod test {
 
     #[test]
     fn test_cat_cmd() {
-        let l = Lexer::new("cat file1 file2 file3");
+        let l = Lexer::new("cat -n -s -b -e file3");
 
         let tokens = vec![
             Token::new(TokenType::Cat, "cat".to_string()),
-            Token::new(TokenType::Literal, "file1".to_string()),
-            Token::new(TokenType::Literal, "file2".to_string()),
+            Token::new(TokenType::ShortParam, "-n".to_string()),
+            Token::new(TokenType::ShortParam, "-s".to_string()),
+            Token::new(TokenType::ShortParam, "-b".to_string()),
+            Token::new(TokenType::ShortParam, "-e".to_string()),
             Token::new(TokenType::Literal, "file3".to_string()),
             Token::new(TokenType::Eof, "".to_string()),
         ];
