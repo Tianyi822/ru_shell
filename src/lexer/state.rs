@@ -5,6 +5,7 @@ pub enum State {
 
     Literal,
 
+    // =============== command ===============
     // ls command
     LsCommandState1,
     LsCommandState,
@@ -19,6 +20,10 @@ pub enum State {
     GrepCommandState3,
     GrepCommandState,
 
+    // cat command
+    CatCommandState2,
+    CatCommandState,
+
     // number
     NumState,
 
@@ -31,38 +36,25 @@ pub enum State {
     LongParamState,
 
     // Single Symbols
-    PipeState,
-    // |
-    CommaState,
-    // ,
-    DotState,
-    // .
-    ColonState,
-    // :
-    AssignmentState,
-    // =
-    SemicolonState,
-    // ;
-    GreaterThanState,
-    // >
-    LessThanState,
-    // <
-    SlashState,
-    // /
-    StarState,
-    // *
-    BackgroundState,
-    // &
-    TildeState,
-    // ~
-    QuoteState,
-    // "
+    PipeState,        // |
+    CommaState,       // ,
+    DotState,         // .
+    ColonState,       // :
+    AssignmentState,  // =
+    SemicolonState,   // ;
+    GreaterThanState, // >
+    LessThanState,    // <
+    SlashState,       // /
+    StarState,        // *
+    BackgroundState,  // &
+    TildeState,       // ~
+    QuoteState,       // "
     SingleQuoteState, // '
 
     // Combined Symbols
     AndState,
     // &&
-    OrState,  // ||
+    OrState, // ||
 
     // This state means that the lexer has reached the end of the command.
     End,
