@@ -92,6 +92,16 @@ mod parser_test {
     }
 
     #[test]
+    fn test_cat_cmd_parse() {
+        let parser = Parser::new("cat ~/Programs/Rust/ru-shell/Cargo.toml");
+
+        let cmd = parser.iter().next().unwrap();
+        assert_eq!(cmd.cmd_type(), &CommandType::ExtCommand);
+        assert_eq!(cmd.token_type(), &TokenType::Cat);
+        assert_eq!(cmd.get_values().unwrap()[0], "~/Programs/Rust/ru-shell/Cargo.toml");
+    }
+
+    #[test]
     fn test_error_grammar() {
         let parser = Parser::new("-l -h");
 
