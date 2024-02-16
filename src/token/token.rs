@@ -6,6 +6,7 @@ pub enum TokenType {
     Ls,   // ls
     Cd,   // cd
     Grep, // grep
+    Cat,  // cat
 
     // Param
     ShortParam,

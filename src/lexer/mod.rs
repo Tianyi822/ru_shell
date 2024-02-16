@@ -116,12 +116,27 @@ impl Lexer {
                 State::CdCommandState1 => {
                     if c.eq(&'d') {
                         *(self.cur_state.borrow_mut()) = State::CdCommandState;
+                    } else if c.eq(&'a') {
+                        *(self.cur_state.borrow_mut()) = State::CatCommandState2;
                     } else {
                         self.trans_state(c);
                     }
                 }
 
                 State::CdCommandState => {
+                    self.store_token_and_trans_state(index, c);
+                }
+
+                // =============== cat command ===============
+                State::CatCommandState2 => {
+                    if c.eq(&'t') {
+                        *(self.cur_state.borrow_mut()) = State::CatCommandState;
+                    } else {
+                        self.trans_state(c);
+                    }
+                }
+
+                State::CatCommandState => {
                     self.store_token_and_trans_state(index, c);
                 }
 
@@ -287,7 +302,7 @@ impl Lexer {
                 State::LsCommandState => TokenType::Ls,
                 State::CdCommandState => TokenType::Cd,
                 State::GrepCommandState => TokenType::Grep,
-                State::PipeState => TokenType::Pipe,
+                State::CatCommandState => TokenType::Cat,
 
                 // =============== parameter ===============
                 State::ShortParamState => TokenType::ShortParam,
@@ -307,6 +322,7 @@ impl Lexer {
                 State::TildeState => TokenType::Tilde,
                 State::QuoteState => TokenType::Quote,
                 State::SingleQuoteState => TokenType::SingleQuote,
+                State::PipeState => TokenType::Pipe,
 
                 // =============== combined symbols ===============
                 State::AndState => TokenType::And,

@@ -7,6 +7,7 @@ use crate::parser::Parser;
 use crate::stream::Stream;
 use crate::token::token::TokenType;
 
+pub mod cat;
 pub mod grep;
 pub mod ls;
 

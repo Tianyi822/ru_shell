@@ -2,13 +2,13 @@ use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
 use crate::lexer::Lexer;
-use crate::parser::cmds_ast_node::{ChainCommandAstNode, ExeCommandAstNode};
 use crate::parser::ast_node_trait::CommandAstNode;
+use crate::parser::cmds_ast_node::{ChainCommandAstNode, ExeCommandAstNode};
 use crate::token::token::Token;
 use crate::token::token::TokenType;
 
-pub mod cmds_ast_node;
 pub mod ast_node_trait;
+pub mod cmds_ast_node;
 
 // Since the syntax of command-line interfaces is simpler than that of programming languages,
 // this parser analyzes and processes in the order of tokens.
@@ -153,7 +153,7 @@ impl Parser {
         let cur_token = self.cur_token.borrow().clone();
         match cur_token {
             Some(ref token) => match token.token_type() {
-                TokenType::Ls | TokenType::Cd | TokenType::Grep => true,
+                TokenType::Ls | TokenType::Cd | TokenType::Grep | TokenType::Cat => true,
                 // This means the end of the command.
                 TokenType::Eof => true,
                 _ => false,
@@ -175,7 +175,9 @@ impl Parser {
         // and return the parsed AST (Abstract Syntax Tree) node.
         let ext_cmd: Option<Box<dyn CommandAstNode>> = match cur_token {
             Some(ref token) => match token.token_type() {
-                TokenType::Ls | TokenType::Cd | TokenType::Grep => Some(self.parse_exe_command()),
+                TokenType::Ls | TokenType::Cd | TokenType::Grep | TokenType::Cat => {
+                    Some(self.parse_exe_command())
+                }
                 _ => None,
             },
             None => None,

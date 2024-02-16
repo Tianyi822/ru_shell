@@ -249,4 +249,26 @@ mod test {
         let s = l.joint_tokens_to_str_by_range(0, 2);
         assert_eq!(s, "ls -l");
     }
+
+    #[test]
+    fn test_cat_cmd() {
+        let l = Lexer::new("cat -n -s -b -e file3");
+
+        let tokens = vec![
+            Token::new(TokenType::Cat, "cat".to_string()),
+            Token::new(TokenType::ShortParam, "-n".to_string()),
+            Token::new(TokenType::ShortParam, "-s".to_string()),
+            Token::new(TokenType::ShortParam, "-b".to_string()),
+            Token::new(TokenType::ShortParam, "-e".to_string()),
+            Token::new(TokenType::Literal, "file3".to_string()),
+            Token::new(TokenType::Eof, "".to_string()),
+        ];
+
+        for token in tokens.iter() {
+            let next_token = l.next_token().unwrap();
+
+            assert_eq!(*token.token_type(), *next_token.token_type());
+            assert_eq!(token.literal(), next_token.literal());
+        }
+    }
 }
