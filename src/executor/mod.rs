@@ -1,11 +1,13 @@
 use std::rc::Rc;
 
-use crate::executor::grep::GrepCmd;
-use crate::executor::ls::LsCmd;
 use crate::parser::ast_node_trait::{CommandAstNode, CommandType};
 use crate::parser::Parser;
 use crate::stream::Stream;
 use crate::token::token::TokenType;
+
+use self::cat::CatCmd;
+use self::grep::GrepCmd;
+use self::ls::LsCmd;
 
 pub mod cat;
 pub mod grep;
@@ -56,6 +58,7 @@ fn analyze_exe_node(cmd: Box<dyn CommandAstNode>) -> Box<dyn Command> {
     match cmd.token_type() {
         TokenType::Ls => Box::new(LsCmd::from(cmd)),
         TokenType::Grep => Box::new(GrepCmd::from(cmd)),
+        TokenType::Cat => Box::new(CatCmd::from(cmd)),
         _ => {
             todo!()
         }

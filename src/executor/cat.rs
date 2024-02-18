@@ -1,29 +1,145 @@
-use std::rc::Rc;
+use std::{
+    fs::File,
+    io::{self, BufRead},
+    path::PathBuf,
+    rc::Rc,
+};
 
 use crate::{parser::ast_node_trait::CommandAstNode, stream::Stream};
 
 use super::Command;
 
-pub struct CatCmd {}
+pub struct CatCmd {
+    // Output line number
+    line_number: bool,
+
+    // Output line number for non-blank lines
+    line_number_non_blank: bool,
+
+    // Squeeze multiple adjacent empty lines
+    squeeze_blank: bool,
+
+    // Display $ at end of each line
+    show_ends: bool,
+
+    file: PathBuf,
+
+    stream: Option<Rc<dyn Stream>>,
+}
 
 impl CatCmd {
-    pub fn new() -> Self {
-        CatCmd {}
+    fn new(
+        line_number: bool,
+        line_number_non_blank: bool,
+        squeeze_blank: bool,
+        show_ends: bool,
+        file: PathBuf,
+    ) -> Self {
+        CatCmd {
+            line_number,
+            line_number_non_blank,
+            squeeze_blank,
+            show_ends,
+            file,
+            stream: None,
+        }
+    }
+}
+
+impl CatCmd {
+    fn read_file_with_options(&self) -> Vec<(u32, String)> {
+        let mut result: Vec<(u32, String)> = vec![];
+
+        // Open the file
+        let file = File::open(&self.file).unwrap();
+        let reader = io::BufReader::new(file);
+
+        // Read the file line by line
+        let mut line_num = 1;
+        for line in reader.lines() {
+            match line {
+                Ok(line) => {
+                    result.push((line_num, line));
+                }
+                Err(e) => panic!("Error: {}", e),
+            }
+            line_num += 1;
+        }
+
+        result
+    }
+
+    fn read_file(&self) -> Vec<String> {
+        self.read_file_with_options()
+            .iter()
+            .map(|(num, line_str)| {
+                if self.line_number {
+                    format!("{:>6} {}\n\r", num, line_str)
+                } else {
+                    format!("{}\n\r", line_str)
+                }
+            })
+            .collect()
     }
 }
 
 impl Command for CatCmd {
     fn execute(&self) {
-        todo!()
+        self.read_file().iter().for_each(|line: &String| {
+            self.stream.as_ref().unwrap().output(line.to_string());
+        });
     }
 
     fn add_stream(&mut self, stream: Rc<dyn Stream>) {
-        todo!()
+        self.stream = Some(stream);
     }
 }
 
 impl From<Box<dyn CommandAstNode>> for CatCmd {
     fn from(cmd: Box<dyn CommandAstNode>) -> Self {
-        todo!()
+        // Get values
+        let values = cmd.get_values().unwrap_or_else(|| Vec::new());
+
+        // Get file
+        let file = match values.get(0) {
+            Some(values) => values,
+            None => panic!("File is not provided"),
+        };
+
+        // Check if file exists
+        let file_buf = PathBuf::from(file);
+        if file_buf.exists() == false {
+            panic!("File {} does not exist", file_buf.display());
+        }
+
+        // Get options
+        let line_number = match cmd.get_option("-n").or(cmd.get_option("--number")) {
+            Some(_) => true,
+            None => false,
+        };
+
+        let line_number_non_blank =
+            match cmd.get_option("-b").or(cmd.get_option("--number-nonblank")) {
+                Some(_) => true,
+                None => false,
+            };
+
+        let squeeze_blank = match cmd.get_option("-s").or(cmd.get_option("--squeeze-blank")) {
+            Some(_) => true,
+            None => false,
+        };
+
+        let show_ends = match cmd.get_option("-E").or(cmd.get_option("--show-ends")) {
+            Some(_) => true,
+            None => false,
+        };
+
+        CatCmd::new(
+            line_number,
+            line_number_non_blank,
+            squeeze_blank,
+            show_ends,
+            file_buf,
+        )
     }
 }
