@@ -1,4 +1,9 @@
-use std::{path::PathBuf, rc::Rc};
+use std::{
+    fs::File,
+    io::{self, BufRead},
+    path::PathBuf,
+    rc::Rc,
+};
 
 use crate::{parser::ast_node_trait::CommandAstNode, stream::Stream};
 
@@ -17,7 +22,7 @@ pub struct CatCmd {
     // Display $ at end of each line
     show_ends: bool,
 
-    path: PathBuf,
+    file: PathBuf,
 
     stream: Option<Rc<dyn Stream>>,
 }
@@ -28,28 +33,61 @@ impl CatCmd {
         line_number_non_blank: bool,
         squeeze_blank: bool,
         show_ends: bool,
-        path: PathBuf,
+        file: PathBuf,
     ) -> Self {
         CatCmd {
             line_number,
             line_number_non_blank,
             squeeze_blank,
             show_ends,
-            path,
+            file,
             stream: None,
         }
     }
 }
 
 impl CatCmd {
-    fn read_file_with_options(&self) -> Vec<(i32, String)> {
-        todo!()
+    fn read_file_with_options(&self) -> Vec<(u32, String)> {
+        let mut result: Vec<(u32, String)> = vec![];
+
+        // Open the file
+        let file = File::open(&self.file).unwrap();
+        let reader = io::BufReader::new(file);
+
+        // Read the file line by line
+        let mut line_num = 1;
+        for line in reader.lines() {
+            match line {
+                Ok(line) => {
+                    result.push((line_num, line));
+                }
+                Err(e) => panic!("Error: {}", e),
+            }
+            line_num += 1;
+        }
+
+        result
+    }
+
+    fn read_file(&self) -> Vec<String> {
+        self.read_file_with_options()
+            .iter()
+            .map(|(num, line_str)| {
+                if self.line_number {
+                    format!("{:>6} {}\n\r", num, line_str)
+                } else {
+                    format!("{}\n\r", line_str)
+                }
+            })
+            .collect()
     }
 }
 
 impl Command for CatCmd {
     fn execute(&self) {
-        todo!()
+        self.read_file().iter().for_each(|line: &String| {
+            self.stream.as_ref().unwrap().output(line.to_string());
+        });
     }
 
     fn add_stream(&mut self, stream: Rc<dyn Stream>) {
@@ -65,7 +103,7 @@ impl From<Box<dyn CommandAstNode>> for CatCmd {
         // Get file
         let file = match values.get(0) {
             Some(values) => values,
-            None => panic!("File that should be grepped is not provided"),
+            None => panic!("File is not provided"),
         };
 
         // Check if file exists

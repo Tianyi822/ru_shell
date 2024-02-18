@@ -37,4 +37,16 @@ mod executor_test {
         println!("======================");
         executor::execute("grep -i \"col\" Cargo.toml", console_stream.clone());
     }
+
+    #[test]
+    fn test_cat_cmd() {
+        let console_stream = Rc::new(ConsoleSteam::new());
+        executor::execute("cat Cargo.toml", console_stream.clone());
+    }
+
+    #[test]
+    fn test_cat_cmd_with_line_number() {
+        let console_stream = Rc::new(ConsoleSteam::new());
+        executor::execute("cat -n Cargo.toml", console_stream.clone());
+    }
 }
