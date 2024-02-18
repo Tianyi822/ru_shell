@@ -292,7 +292,7 @@ impl Lexer {
         *start_index = self.move_index_to_next_non_blank_char(*start_index);
 
         // Get the literal of token from char vector.
-        let literal = self.command[*start_index..cur_index].iter().collect();
+        let literal: String = self.command[*start_index..cur_index].iter().collect();
         *start_index = cur_index;
 
         if !(state == State::WhiteSpace) {
@@ -338,7 +338,7 @@ impl Lexer {
 
             self.tokens
                 .borrow_mut()
-                .push(Token::new(token_type, literal));
+                .push(Token::new(token_type, &literal));
         }
 
         // Judge whether the state should be reset or be end.
@@ -353,7 +353,7 @@ impl Lexer {
             // Add a EOF token to the end for the parser to determine the end of the command.
             self.tokens
                 .borrow_mut()
-                .push(Token::new(TokenType::Eof, "".to_string()));
+                .push(Token::new(TokenType::Eof, ""));
         }
     }
 
