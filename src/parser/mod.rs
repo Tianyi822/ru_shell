@@ -221,7 +221,7 @@ impl Parser {
     fn parse_exe_command(&self) -> Box<dyn CommandAstNode> {
         let cur_token = self.cur_token.borrow().clone();
 
-        // Build the ls command node.
+        // Build the exe command node.
         let mut exe_command = match cur_token {
             Some(token) => ExeCommandAstNode::new(token),
             None => panic!("No token"),

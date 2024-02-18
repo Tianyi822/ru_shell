@@ -23,9 +23,9 @@ mod test {
         let l = Lexer::new("ls -t");
 
         let tokens = vec![
-            Token::new(TokenType::Ls, "ls".to_string()),
-            Token::new(TokenType::ShortParam, "-t".to_string()),
-            Token::new(TokenType::Eof, "".to_string()),
+            Token::new(TokenType::Ls, "ls"),
+            Token::new(TokenType::ShortParam, "-t"),
+            Token::new(TokenType::Eof, ""),
         ];
 
         for token in tokens.iter() {
@@ -40,11 +40,11 @@ mod test {
         let l = Lexer::new("ls -l -h -t");
 
         let tokens = vec![
-            Token::new(TokenType::Ls, "ls".to_string()),
-            Token::new(TokenType::ShortParam, "-l".to_string()),
-            Token::new(TokenType::ShortParam, "-h".to_string()),
-            Token::new(TokenType::ShortParam, "-t".to_string()),
-            Token::new(TokenType::Eof, "".to_string()),
+            Token::new(TokenType::Ls, "ls"),
+            Token::new(TokenType::ShortParam, "-l"),
+            Token::new(TokenType::ShortParam, "-h"),
+            Token::new(TokenType::ShortParam, "-t"),
+            Token::new(TokenType::Eof, ""),
         ];
 
         for token in tokens.iter() {
@@ -59,8 +59,8 @@ mod test {
         let l = Lexer::new("cd");
 
         let tokens = vec![
-            Token::new(TokenType::Cd, "cd".to_string()),
-            Token::new(TokenType::Eof, "".to_string()),
+            Token::new(TokenType::Cd, "cd"),
+            Token::new(TokenType::Eof, ""),
         ];
 
         for token in tokens.iter() {
@@ -75,10 +75,10 @@ mod test {
         let l = Lexer::new("  ls -l --lp  ");
 
         let tokens = vec![
-            Token::new(TokenType::Ls, "ls".to_string()),
-            Token::new(TokenType::ShortParam, "-l".to_string()),
-            Token::new(TokenType::LongParam, "--lp".to_string()),
-            Token::new(TokenType::Eof, "".to_string()),
+            Token::new(TokenType::Ls, "ls"),
+            Token::new(TokenType::ShortParam, "-l"),
+            Token::new(TokenType::LongParam, "--lp"),
+            Token::new(TokenType::Eof, ""),
         ];
 
         for token in tokens.iter() {
@@ -93,23 +93,23 @@ mod test {
         let l = Lexer::new("   ,| ;  >   < .:= /* & && &&& || ~");
 
         let tokens = vec![
-            Token::new(TokenType::Comma, ",".to_string()),
-            Token::new(TokenType::Pipe, "|".to_string()),
-            Token::new(TokenType::Semicolon, ";".to_string()),
-            Token::new(TokenType::GreaterThan, ">".to_string()),
-            Token::new(TokenType::LessThan, "<".to_string()),
-            Token::new(TokenType::Dot, ".".to_string()),
-            Token::new(TokenType::Colon, ":".to_string()),
-            Token::new(TokenType::Assignment, "=".to_string()),
-            Token::new(TokenType::Slash, "/".to_string()),
-            Token::new(TokenType::Star, "*".to_string()),
-            Token::new(TokenType::Background, "&".to_string()),
-            Token::new(TokenType::And, "&&".to_string()),
-            Token::new(TokenType::And, "&&".to_string()),
-            Token::new(TokenType::Background, "&".to_string()),
-            Token::new(TokenType::Or, "||".to_string()),
-            Token::new(TokenType::Tilde, "~".to_string()),
-            Token::new(TokenType::Eof, "".to_string()),
+            Token::new(TokenType::Comma, ","),
+            Token::new(TokenType::Pipe, "|"),
+            Token::new(TokenType::Semicolon, ";"),
+            Token::new(TokenType::GreaterThan, ">"),
+            Token::new(TokenType::LessThan, "<"),
+            Token::new(TokenType::Dot, "."),
+            Token::new(TokenType::Colon, ":"),
+            Token::new(TokenType::Assignment, "="),
+            Token::new(TokenType::Slash, "/"),
+            Token::new(TokenType::Star, "*"),
+            Token::new(TokenType::Background, "&"),
+            Token::new(TokenType::And, "&&"),
+            Token::new(TokenType::And, "&&"),
+            Token::new(TokenType::Background, "&"),
+            Token::new(TokenType::Or, "||"),
+            Token::new(TokenType::Tilde, "~"),
+            Token::new(TokenType::Eof, ""),
         ];
 
         for token in tokens.iter() {
@@ -124,13 +124,13 @@ mod test {
         let l = Lexer::new("123 456 123_456 12_3456 1_000_000 1_0000_0000_0000");
 
         let tokens = vec![
-            Token::new(TokenType::Num, "123".to_string()),
-            Token::new(TokenType::Num, "456".to_string()),
-            Token::new(TokenType::Num, "123_456".to_string()),
-            Token::new(TokenType::Num, "12_3456".to_string()),
-            Token::new(TokenType::Num, "1_000_000".to_string()),
-            Token::new(TokenType::Num, "1_0000_0000_0000".to_string()),
-            Token::new(TokenType::Eof, "".to_string()),
+            Token::new(TokenType::Num, "123"),
+            Token::new(TokenType::Num, "456"),
+            Token::new(TokenType::Num, "123_456"),
+            Token::new(TokenType::Num, "12_3456"),
+            Token::new(TokenType::Num, "1_000_000"),
+            Token::new(TokenType::Num, "1_0000_0000_0000"),
+            Token::new(TokenType::Eof, ""),
         ];
 
         for token in tokens.iter() {
@@ -145,16 +145,16 @@ mod test {
         let l = Lexer::new("a abc _abc _123 Abc_de 123_abc 123_A_b ru-shell aa/bb/cc/.dd/ee_ff");
 
         let tokens = vec![
-            Token::new(TokenType::Literal, "a".to_string()),
-            Token::new(TokenType::Literal, "abc".to_string()),
-            Token::new(TokenType::Literal, "_abc".to_string()),
-            Token::new(TokenType::Literal, "_123".to_string()),
-            Token::new(TokenType::Literal, "Abc_de".to_string()),
-            Token::new(TokenType::Literal, "123_abc".to_string()),
-            Token::new(TokenType::Literal, "123_A_b".to_string()),
-            Token::new(TokenType::Literal, "ru-shell".to_string()),
-            Token::new(TokenType::Literal, "aa/bb/cc/.dd/ee_ff".to_string()),
-            Token::new(TokenType::Eof, "".to_string()),
+            Token::new(TokenType::Literal, "a"),
+            Token::new(TokenType::Literal, "abc"),
+            Token::new(TokenType::Literal, "_abc"),
+            Token::new(TokenType::Literal, "_123"),
+            Token::new(TokenType::Literal, "Abc_de"),
+            Token::new(TokenType::Literal, "123_abc"),
+            Token::new(TokenType::Literal, "123_A_b"),
+            Token::new(TokenType::Literal, "ru-shell"),
+            Token::new(TokenType::Literal, "aa/bb/cc/.dd/ee_ff"),
+            Token::new(TokenType::Eof, ""),
         ];
 
         for token in tokens.iter() {
@@ -169,12 +169,12 @@ mod test {
         let l = Lexer::new("Programs/Rust/ru-shell,Programs/Rust/ru-shell,Programs/Rust/ru-shell");
 
         let tokens = vec![
-            Token::new(TokenType::Literal, "Programs/Rust/ru-shell".to_string()),
-            Token::new(TokenType::Comma, ",".to_string()),
-            Token::new(TokenType::Literal, "Programs/Rust/ru-shell".to_string()),
-            Token::new(TokenType::Comma, ",".to_string()),
-            Token::new(TokenType::Literal, "Programs/Rust/ru-shell".to_string()),
-            Token::new(TokenType::Eof, "".to_string()),
+            Token::new(TokenType::Literal, "Programs/Rust/ru-shell"),
+            Token::new(TokenType::Comma, ","),
+            Token::new(TokenType::Literal, "Programs/Rust/ru-shell"),
+            Token::new(TokenType::Comma, ","),
+            Token::new(TokenType::Literal, "Programs/Rust/ru-shell"),
+            Token::new(TokenType::Eof, ""),
         ];
 
         for token in tokens.iter() {
@@ -189,10 +189,10 @@ mod test {
         let l = Lexer::new("grep a bac");
 
         let tokens = vec![
-            Token::new(TokenType::Grep, "grep".to_string()),
-            Token::new(TokenType::Literal, "a".to_string()),
-            Token::new(TokenType::Literal, "bac".to_string()),
-            Token::new(TokenType::Eof, "".to_string()),
+            Token::new(TokenType::Grep, "grep"),
+            Token::new(TokenType::Literal, "a"),
+            Token::new(TokenType::Literal, "bac"),
+            Token::new(TokenType::Eof, ""),
         ];
 
         for token in tokens.iter() {
@@ -207,16 +207,16 @@ mod test {
         let l = Lexer::new("grep \"hello world\" 'hello world'");
 
         let tokens = vec![
-            Token::new(TokenType::Grep, "grep".to_string()),
-            Token::new(TokenType::Quote, "\"".to_string()),
-            Token::new(TokenType::Literal, "hello".to_string()),
-            Token::new(TokenType::Literal, "world".to_string()),
-            Token::new(TokenType::Quote, "\"".to_string()),
-            Token::new(TokenType::SingleQuote, "'".to_string()),
-            Token::new(TokenType::Literal, "hello".to_string()),
-            Token::new(TokenType::Literal, "world".to_string()),
-            Token::new(TokenType::SingleQuote, "'".to_string()),
-            Token::new(TokenType::Eof, "".to_string()),
+            Token::new(TokenType::Grep, "grep"),
+            Token::new(TokenType::Quote, "\""),
+            Token::new(TokenType::Literal, "hello"),
+            Token::new(TokenType::Literal, "world"),
+            Token::new(TokenType::Quote, "\""),
+            Token::new(TokenType::SingleQuote, "'"),
+            Token::new(TokenType::Literal, "hello"),
+            Token::new(TokenType::Literal, "world"),
+            Token::new(TokenType::SingleQuote, "'"),
+            Token::new(TokenType::Eof, ""),
         ];
 
         for token in tokens.iter() {
@@ -232,11 +232,11 @@ mod test {
         let l = Lexer::new("ls -l -h -t");
 
         let tokens = vec![
-            Token::new(TokenType::Ls, "ls".to_string()),
-            Token::new(TokenType::ShortParam, "-l".to_string()),
-            Token::new(TokenType::ShortParam, "-h".to_string()),
-            Token::new(TokenType::ShortParam, "-t".to_string()),
-            Token::new(TokenType::Eof, "".to_string()),
+            Token::new(TokenType::Ls, "ls"),
+            Token::new(TokenType::ShortParam, "-l"),
+            Token::new(TokenType::ShortParam, "-h"),
+            Token::new(TokenType::ShortParam, "-t"),
+            Token::new(TokenType::Eof, ""),
         ];
 
         for token in tokens.iter() {
@@ -255,13 +255,13 @@ mod test {
         let l = Lexer::new("cat -n -s -b -e file3");
 
         let tokens = vec![
-            Token::new(TokenType::Cat, "cat".to_string()),
-            Token::new(TokenType::ShortParam, "-n".to_string()),
-            Token::new(TokenType::ShortParam, "-s".to_string()),
-            Token::new(TokenType::ShortParam, "-b".to_string()),
-            Token::new(TokenType::ShortParam, "-e".to_string()),
-            Token::new(TokenType::Literal, "file3".to_string()),
-            Token::new(TokenType::Eof, "".to_string()),
+            Token::new(TokenType::Cat, "cat"),
+            Token::new(TokenType::ShortParam, "-n"),
+            Token::new(TokenType::ShortParam, "-s"),
+            Token::new(TokenType::ShortParam, "-b"),
+            Token::new(TokenType::ShortParam, "-e"),
+            Token::new(TokenType::Literal, "file3"),
+            Token::new(TokenType::Eof, ""),
         ];
 
         for token in tokens.iter() {
