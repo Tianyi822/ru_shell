@@ -51,7 +51,7 @@ pub struct GrepCmd {
 }
 
 impl GrepCmd {
-    pub fn new(pattern: String, file: PathBuf) -> Self {
+    fn new(pattern: String, file: PathBuf) -> Self {
         GrepCmd {
             pattern,
             file,
