@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod parser_test {
-    use ru_shell::parser::cmds_ast_node::ExeCommandAstNode;
     use ru_shell::parser::ast_node_trait::{CommandAstNode, CommandType};
+    use ru_shell::parser::cmds_ast_node::ExeCommandAstNode;
     use ru_shell::parser::Parser;
     use ru_shell::token::token::{Token, TokenType};
 
@@ -22,7 +22,7 @@ mod parser_test {
     }
 
     #[test]
-    fn test_new_parser() {
+    fn test_parser() {
         let parser = Parser::new(
             "ls -l -h --tree --depth 3 ~/Programs/Rust/ru-shell,Programs/Rust/ru-shell",
         );
@@ -34,6 +34,21 @@ mod parser_test {
             assert_eq!(command.get_option("-h"), Some(""));
             assert_eq!(command.get_option("--tree"), Some(""));
             assert_eq!(command.get_option("--depth"), Some("3"));
+        });
+    }
+
+    #[test]
+    fn test_new_parser() {
+        let parser = Parser::new("ls -l -h --tree --depth=3 src/");
+
+        parser.iter().for_each(|command| {
+            assert_eq!(command.token_type(), &TokenType::Ls);
+            assert_eq!(command.cmd_type(), &CommandType::ExtCommand);
+            assert_eq!(command.get_option("-l"), Some(""));
+            assert_eq!(command.get_option("-h"), Some(""));
+            assert_eq!(command.get_option("--tree"), Some(""));
+            assert_eq!(command.get_option("--depth"), Some("3"));
+            assert_eq!(command.get_values().unwrap()[0], "src/");
         });
     }
 
@@ -94,7 +109,10 @@ mod parser_test {
         let cmd = parser.iter().next().unwrap();
         assert_eq!(cmd.cmd_type(), &CommandType::ExtCommand);
         assert_eq!(cmd.token_type(), &TokenType::Cat);
-        assert_eq!(cmd.get_values().unwrap()[0], "~/Programs/Rust/ru-shell/Cargo.toml");
+        assert_eq!(
+            cmd.get_values().unwrap()[0],
+            "~/Programs/Rust/ru-shell/Cargo.toml"
+        );
     }
 
     #[test]
@@ -107,7 +125,10 @@ mod parser_test {
         assert_eq!(cmd.get_option("-n"), Some(""));
         assert_eq!(cmd.get_option("-b"), Some(""));
         assert_eq!(cmd.get_option("-s"), Some(""));
-        assert_eq!(cmd.get_values().unwrap()[0], "~/Programs/Rust/ru-shell/Cargo.toml");
+        assert_eq!(
+            cmd.get_values().unwrap()[0],
+            "~/Programs/Rust/ru-shell/Cargo.toml"
+        );
     }
 
     #[test]
