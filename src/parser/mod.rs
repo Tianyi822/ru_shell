@@ -248,10 +248,8 @@ impl Parser {
 
     // Parse the matching rules of the 'Pattern matching' command.
     fn parse_pattern(&self) -> Option<String> {
-        let cur_token = self.cur_token.borrow().clone();
-
         // If the current token is a double quotation mark, then the pattern is complete.
-        if *cur_token.token_type() == TokenType::Quote {
+        if *self.cur_token.borrow().token_type() == TokenType::Quote {
             self.next_token();
         } else {
             self.collect_error("Missing pattern. You can use `\"` to quote the pattern.");
@@ -262,13 +260,13 @@ impl Parser {
         // until the condition is not met.
         let mut pattern = String::from("");
         loop {
-            if *cur_token.token_type() == TokenType::Literal
-                || *cur_token.token_type() == TokenType::Num
-                || *cur_token.token_type() == TokenType::Slash
-                || *cur_token.token_type() == TokenType::Dot
-                || *cur_token.token_type() == TokenType::Tilde
+            if *self.cur_token.borrow().token_type() == TokenType::Literal
+                || *self.cur_token.borrow().token_type() == TokenType::Num
+                || *self.cur_token.borrow().token_type() == TokenType::Slash
+                || *self.cur_token.borrow().token_type() == TokenType::Dot
+                || *self.cur_token.borrow().token_type() == TokenType::Tilde
             {
-                pattern.push_str(cur_token.literal());
+                pattern.push_str(self.cur_token.borrow().literal());
                 self.next_token();
             } else {
                 break;
@@ -276,7 +274,7 @@ impl Parser {
         }
 
         // If the current token is a double quotation mark, then the pattern is complete.
-        if *cur_token.token_type() == TokenType::Quote {
+        if *self.cur_token.borrow().token_type() == TokenType::Quote {
             self.next_token();
         } else {
             self.collect_error("Invalid pattern, missing right quotation mark.");
@@ -292,7 +290,7 @@ impl Parser {
 
         loop {
             let cur_token = self.cur_token.borrow().clone();
-            match cur_token.token_type() {
+            match *cur_token.token_type() {
                 TokenType::Tilde
                 | TokenType::Literal
                 | TokenType::Num
@@ -321,9 +319,7 @@ impl Parser {
 
     // Parse the path of the command.
     fn parse_path(&self) -> Option<String> {
-        let cur_token = self.cur_token.borrow().clone();
-
-        let mut path = String::from(cur_token.literal());
+        let mut path = String::from(self.cur_token.borrow().literal());
         self.next_token();
 
         loop {
@@ -331,13 +327,13 @@ impl Parser {
                 break;
             }
 
-            if *cur_token.token_type() == TokenType::Literal
-                || *cur_token.token_type() == TokenType::Num
-                || *cur_token.token_type() == TokenType::Slash
-                || *cur_token.token_type() == TokenType::Dot
-                || *cur_token.token_type() == TokenType::Tilde
+            if *self.cur_token.borrow().token_type() == TokenType::Literal
+                || *self.cur_token.borrow().token_type() == TokenType::Num
+                || *self.cur_token.borrow().token_type() == TokenType::Slash
+                || *self.cur_token.borrow().token_type() == TokenType::Dot
+                || *self.cur_token.borrow().token_type() == TokenType::Tilde
             {
-                path.push_str(cur_token.literal());
+                path.push_str(self.cur_token.borrow().literal());
                 self.next_token();
             } else {
                 break;
