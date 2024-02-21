@@ -57,7 +57,7 @@ pub struct LsCmd {
     sort_by_time: bool,
 
     // reverse sort
-    resort: bool,
+    reverse: bool,
 
     // show files and directories as a tree
     tree: bool,
@@ -95,7 +95,7 @@ impl LsCmd {
             human_readable: false,
             sort_by_size: false,
             sort_by_time: false,
-            resort: false,
+            reverse: false,
             tree: false,
             depth: 10,
             paths: Vec::new(),
@@ -468,7 +468,7 @@ impl LsCmd {
         }
 
         // Reverse sort if get '-r' option.
-        if self.resort {
+        if self.reverse {
             files.reverse();
         }
     }
@@ -514,9 +514,9 @@ impl From<Box<dyn CommandAstNode>> for LsCmd {
         }
 
         // Get the 'resort' option
-        match cmd.get_option("-r").or(cmd.get_option("--resort")) {
-            Some(_) => ls_cmd.resort = true,
-            None => ls_cmd.resort = false,
+        match cmd.get_option("-r").or(cmd.get_option("--reverse")) {
+            Some(_) => ls_cmd.reverse = true,
+            None => ls_cmd.reverse = false,
         }
 
         match cmd.get_option("-t").or(cmd.get_option("--time")) {
