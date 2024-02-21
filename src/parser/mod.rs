@@ -30,7 +30,7 @@ pub struct Parser {
     lexer: Lexer,
 
     // The current token that the parser is looking at.
-    cur_token: RefCell<Option<Token>>,
+    cur_token: RefCell<Token>,
 
     // Use to get command and its parameter from lexer.
     cmd_start_index: Cell<u32>,
@@ -73,7 +73,7 @@ impl Parser {
         let parser = Parser {
             lexer: Lexer::new(input),
             command_ast: RefCell::new(Vec::new()),
-            cur_token: RefCell::new(None),
+            cur_token: RefCell::new(Token::new(TokenType::Eof, "")),
             cmd_start_index: Cell::new(0),
             cmd_end_index: Cell::new(0),
             errors: Rc::new(RefCell::new(Vec::new())),
@@ -101,15 +101,11 @@ impl Parser {
 
     // Parse the command and return the AST.
     fn parse(&self) {
-        if self.cur_token.borrow().is_none() {
-            return;
-        }
-
-        if self.cur_token.borrow().clone().unwrap().token_type() == &TokenType::Eof {
-            return;
-        }
-
         loop {
+            if self.cur_token.borrow().clone().token_type() == &TokenType::Eof {
+                return;
+            }
+            
             // Check if the current token is a command.
             if !self.check_wether_is_command() {
                 self.collect_error("Invalid command");
@@ -151,15 +147,11 @@ impl Parser {
     // Check if the current token is a command.
     fn check_wether_is_command(&self) -> bool {
         let cur_token = self.cur_token.borrow().clone();
-        match cur_token {
-            Some(ref token) => match token.token_type() {
-                TokenType::Ls | TokenType::Cd | TokenType::Grep | TokenType::Cat => true,
-                // This means the end of the command.
-                TokenType::Eof => true,
-                _ => false,
-            },
-            // This is equivalent to TokenType::Eof.
-            None => true,
+        match cur_token.token_type() {
+            TokenType::Ls | TokenType::Cd | TokenType::Grep | TokenType::Cat => true,
+            // This means the end of the command.
+            TokenType::Eof => false,
+            _ => false,
         }
     }
 
@@ -173,14 +165,11 @@ impl Parser {
         let cur_token = self.cur_token.borrow().clone();
         // Parse the corresponding command based on the token type
         // and return the parsed AST (Abstract Syntax Tree) node.
-        let ext_cmd: Option<Box<dyn CommandAstNode>> = match cur_token {
-            Some(ref token) => match token.token_type() {
-                TokenType::Ls | TokenType::Cd | TokenType::Grep | TokenType::Cat => {
-                    Some(self.parse_exe_command())
-                }
-                _ => None,
-            },
-            None => None,
+        let ext_cmd: Option<Box<dyn CommandAstNode>> = match cur_token.token_type() {
+            TokenType::Ls | TokenType::Cd | TokenType::Grep | TokenType::Cat => {
+                Some(self.parse_exe_command())
+            }
+            _ => None,
         };
 
         ext_cmd
@@ -189,7 +178,7 @@ impl Parser {
     // Parse the command whose type is chain command.
     fn parse_chain_cmd(&self) -> Option<Box<dyn CommandAstNode>> {
         if self.is_chain_token() {
-            let cur_token = self.cur_token.borrow().clone().unwrap();
+            let cur_token = self.cur_token.borrow().clone();
             let mut cmd = ChainCommandAstNode::new(cur_token);
 
             // Move to next Token to parse
@@ -206,26 +195,16 @@ impl Parser {
 
     // Judge current token if is chain token.
     fn is_chain_token(&self) -> bool {
-        match self.cur_token.borrow().clone() {
-            Some(token) => {
-                if token.token_type() == &TokenType::Pipe {
-                    return true;
-                }
-                false
-            }
-            None => false,
+        if self.cur_token.borrow().token_type() == &TokenType::Pipe {
+            return true;
         }
+        false
     }
 
     // Parse execute command
     fn parse_exe_command(&self) -> Box<dyn CommandAstNode> {
-        let cur_token = self.cur_token.borrow().clone();
-
         // Build the exe command node.
-        let mut exe_command = match cur_token {
-            Some(token) => ExeCommandAstNode::new(token),
-            None => panic!("No token"),
-        };
+        let mut exe_command = ExeCommandAstNode::new(self.cur_token.borrow().clone());
 
         self.next_token();
 
@@ -261,26 +240,19 @@ impl Parser {
         match self.parse_chain_cmd() {
             Some(mut token) => {
                 token.set_source(Some(Box::new(exe_command)));
-                return token;
+                token
             }
-            None => return Box::new(exe_command),
+            None => Box::new(exe_command),
         }
     }
 
     // Parse the matching rules of the 'Pattern matching' command.
     fn parse_pattern(&self) -> Option<String> {
-        let mut cur_token = match self.cur_token.borrow().clone() {
-            Some(token) => token,
-            None => return None,
-        };
+        let cur_token = self.cur_token.borrow().clone();
 
         // If the current token is a double quotation mark, then the pattern is complete.
         if *cur_token.token_type() == TokenType::Quote {
             self.next_token();
-            cur_token = match self.cur_token.borrow().clone() {
-                Some(token) => token,
-                None => return None,
-            };
         } else {
             self.collect_error("Missing pattern. You can use `\"` to quote the pattern.");
             return None;
@@ -298,10 +270,6 @@ impl Parser {
             {
                 pattern.push_str(cur_token.literal());
                 self.next_token();
-                cur_token = match self.cur_token.borrow().clone() {
-                    Some(token) => token,
-                    None => return None,
-                };
             } else {
                 break;
             }
@@ -324,25 +292,20 @@ impl Parser {
 
         loop {
             let cur_token = self.cur_token.borrow().clone();
-            match cur_token {
-                Some(ref token) => match token.token_type() {
-                    TokenType::Tilde
-                    | TokenType::Literal
-                    | TokenType::Num
-                    | TokenType::Slash
-                    | TokenType::Dot => {
-                        paths.push(self.parse_path().unwrap());
-                    }
-                    _ => break,
-                },
-                None => break,
-            }
+            match cur_token.token_type() {
+                TokenType::Tilde
+                | TokenType::Literal
+                | TokenType::Num
+                | TokenType::Slash
+                | TokenType::Dot => {
+                    paths.push(self.parse_path().unwrap());
+                }
+                _ => break,
+            };
 
             // Skip the comma and get next path.
             // If the current token isn't comma, then break the loop.
-            if self.cur_token.borrow().is_none()
-                || self.cur_token.borrow().clone().unwrap().token_type() != &TokenType::Comma
-            {
+            if self.cur_token.borrow().clone().token_type() != &TokenType::Comma {
                 break;
             } else {
                 self.next_token();
@@ -358,27 +321,23 @@ impl Parser {
 
     // Parse the path of the command.
     fn parse_path(&self) -> Option<String> {
-        let cur_token = match self.cur_token.borrow().clone() {
-            Some(token) => token,
-            None => return None,
-        };
+        let cur_token = self.cur_token.borrow().clone();
 
         let mut path = String::from(cur_token.literal());
         self.next_token();
 
         loop {
-            let token = match self.cur_token.borrow().clone() {
-                Some(token) => token,
-                None => return Some(path),
-            };
+            if self.lexer.peek_token().is_none() {
+                break;
+            }
 
-            if *token.token_type() == TokenType::Literal
-                || *token.token_type() == TokenType::Num
-                || *token.token_type() == TokenType::Slash
-                || *token.token_type() == TokenType::Dot
-                || *token.token_type() == TokenType::Tilde
+            if *cur_token.token_type() == TokenType::Literal
+                || *cur_token.token_type() == TokenType::Num
+                || *cur_token.token_type() == TokenType::Slash
+                || *cur_token.token_type() == TokenType::Dot
+                || *cur_token.token_type() == TokenType::Tilde
             {
-                path.push_str(token.literal());
+                path.push_str(cur_token.literal());
                 self.next_token();
             } else {
                 break;
@@ -395,20 +354,17 @@ impl Parser {
         loop {
             // If the current token isn't a parameter, then break the loop.
             let cur_token = self.cur_token.borrow().clone();
-            match cur_token {
-                Some(ref token) => match token.token_type() {
-                    TokenType::ShortParam | TokenType::LongParam => {
-                        match self.parse_option() {
-                            Some((param, value)) => {
-                                params.push((param, value));
-                            }
-                            None => break,
-                        };
-                    }
-                    _ => break,
-                },
-                None => break,
-            }
+            match cur_token.token_type() {
+                TokenType::ShortParam | TokenType::LongParam => {
+                    match self.parse_option() {
+                        Some((param, value)) => {
+                            params.push((param, value));
+                        }
+                        None => break,
+                    };
+                }
+                _ => break,
+            };
         }
 
         Some(params)
@@ -416,10 +372,7 @@ impl Parser {
 
     // Parse the parameters of the command.
     fn parse_option(&self) -> Option<(String, String)> {
-        let cur_token = match self.cur_token.borrow().clone() {
-            Some(token) => token,
-            None => return None,
-        };
+        let cur_token = self.cur_token.borrow().clone();
 
         // Get the parameter and its value.
         if *cur_token.token_type() == TokenType::ShortParam
@@ -445,20 +398,14 @@ impl Parser {
     // 3. ls --color=auto       : the value 'auto' is assigned to the '--color' parameter with '='.
     // So it is necessary to check in what way the value is assigned to the parameter.
     fn parse_param_value(&self) -> Option<String> {
-        let cur_token = match self.cur_token.borrow().clone() {
-            Some(token) => token,
-            None => return None,
-        };
+        let cur_token = self.cur_token.borrow().clone();
 
         // Skip the assignment operator.
         if *cur_token.token_type() == TokenType::Assignment {
             self.next_token();
         }
 
-        let cur_token = match self.cur_token.borrow().clone() {
-            Some(token) => token,
-            None => return None,
-        };
+        let cur_token = self.cur_token.borrow().clone();
 
         if *cur_token.token_type() == TokenType::Literal
             || *cur_token.token_type() == TokenType::Num
@@ -478,8 +425,8 @@ impl Parser {
         let mut cur_token = self.cur_token.borrow_mut();
 
         match token {
-            Some(t) => *cur_token = Some(t),
-            None => *cur_token = None,
+            Some(t) => *cur_token = t,
+            None => *cur_token = Token::new(TokenType::Eof, ""),
         }
 
         let end_index = self.cmd_end_index.get();

@@ -9,7 +9,7 @@ mod parser_test {
     fn test_show_command() {
         let mut command_ast: Vec<Box<dyn CommandAstNode>> = Vec::new();
 
-        let mut ls_command = ExeCommandAstNode::new(Token::new(TokenType::Ls, "ls".to_string()));
+        let mut ls_command = ExeCommandAstNode::new(Token::new(TokenType::Ls, "ls"));
         ls_command.set_options(vec![
             ("-l".to_string(), "".to_string()),
             ("-h".to_string(), "".to_string()),
@@ -19,8 +19,6 @@ mod parser_test {
         ls_command.set_values(vec!["Programs/Rust/ru-shell".to_string()]);
 
         command_ast.push(Box::new(ls_command));
-
-        // println!("{:#?}", command_ast);
     }
 
     #[test]
