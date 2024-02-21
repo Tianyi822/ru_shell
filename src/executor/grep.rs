@@ -180,22 +180,22 @@ impl From<Box<dyn CommandAstNode>> for GrepCmd {
         let mut grep_cmd = GrepCmd::new(pattern, file_buf);
 
         // Get options
-        match cmd.get_option("-i") {
+        match cmd.get_option("-i").or(cmd.get_option("--ignore-case")) {
             Some(_) => grep_cmd.ignore_case = true,
             None => grep_cmd.ignore_case = false,
         }
 
-        match cmd.get_option("-v") {
+        match cmd.get_option("-v").or(cmd.get_option("--invert-match")) {
             Some(_) => grep_cmd.invert_match = true,
             None => grep_cmd.invert_match = false,
         }
 
-        match cmd.get_option("-c") {
+        match cmd.get_option("-c").or(cmd.get_option("--count")) {
             Some(_) => grep_cmd.count = true,
             None => grep_cmd.count = false,
         }
 
-        match cmd.get_option("-n") {
+        match cmd.get_option("-n").or(cmd.get_option("--line-number")) {
             Some(_) => grep_cmd.show_line_number = true,
             None => grep_cmd.show_line_number = false,
         }
