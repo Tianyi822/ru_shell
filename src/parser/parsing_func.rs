@@ -135,8 +135,57 @@ impl Parser {
         Some(Box::new(grep_cmd))
     }
 
+    // Parse the cat command.
+    // The cat command has the following options:
+    // -n, --number: number all output lines
+    // -b, --number-nonblank: number nonempty output lines, overrides -n
+    // -s, --squeeze-blank: suppress repeated empty output lines
+    // -E, --show-ends: display $ at end of each line
     pub fn parse_cat_cmd(&self) -> Option<Box<dyn CommandAstNode>> {
-        todo!()
+        // Build the exe command node.
+        let mut cat_cmd: ExeCommandAstNode =
+            ExeCommandAstNode::new(self.cur_token.borrow().clone());
+
+        self.next_token();
+
+        // Parse the parameters of the command.
+        let mut options: Vec<(String, String)> = Vec::new();
+        loop {
+            if *self.cur_token.borrow().token_type() == TokenType::Eof
+                || !(*self.cur_token.borrow().token_type() == TokenType::ShortParam
+                    || *self.cur_token.borrow().token_type() == TokenType::LongParam)
+            {
+                break;
+            }
+
+            let cur_token = self.cur_token.borrow().clone();
+            match cur_token.literal() {
+                "-n" | "--number" => {
+                    options.push(self.parse_option(false));
+                }
+                "-b" | "--number-nonblank" => {
+                    options.push(self.parse_option(false));
+                }
+                "-s" | "--squeeze-blank" => {
+                    options.push(self.parse_option(false));
+                }
+                "-E" | "--show-ends" => {
+                    options.push(self.parse_option(false));
+                }
+                _ => {
+                    options.push(self.parse_option(false));
+                }
+            }
+        }
+        cat_cmd.set_options(options);
+
+        // Parse the paths of the ls command.
+        match self.parse_paths() {
+            Some(paths) => cat_cmd.set_values(paths),
+            None => (),
+        };
+
+        Some(Box::new(cat_cmd))
     }
 
     // Parse the parameters of the command.
