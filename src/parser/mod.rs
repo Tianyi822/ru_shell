@@ -7,8 +7,6 @@ use crate::parser::ast_node_trait::CommandAstNode;
 use crate::token::token::Token;
 use crate::token::token::TokenType;
 
-use self::cmds_ast_node::ChainCommandAstNode;
-
 pub mod ast_node_trait;
 pub mod cmds_ast_node;
 mod parsing_func;
@@ -175,33 +173,12 @@ impl Parser {
             _ => None,
         };
 
+        if let Some(mut token) = self.parse_chain_cmd() {
+            token.set_source(ext_cmd);
+            return Some(token);
+        }
+
         ext_cmd
-    }
-
-    // Parse the command whose type is chain command.
-    fn parse_chain_cmd(&self) -> Option<Box<dyn CommandAstNode>> {
-        if self.is_chain_token() {
-            let cur_token = self.cur_token.borrow().clone();
-            let mut cmd = ChainCommandAstNode::new(cur_token);
-
-            // Move to next Token to parse
-            self.next_token();
-            // Set data destination of chain command.
-            let destination = self.parse_cmd();
-            cmd.set_destination(destination);
-
-            return Some(Box::new(cmd));
-        }
-
-        None
-    }
-
-    // Judge current token if is chain token.
-    fn is_chain_token(&self) -> bool {
-        if self.cur_token.borrow().token_type() == &TokenType::Pipe {
-            return true;
-        }
-        false
     }
 
     // Update the current token and move the position that in Lexer to next token.
