@@ -1,6 +1,10 @@
 use crate::token::token::TokenType;
 
-use super::{ast_node_trait::CommandAstNode, cmds_ast_node::ExeCommandAstNode, Parser};
+use super::{
+    ast_node_trait::CommandAstNode,
+    cmds_ast_node::{ChainCommandAstNode, ExeCommandAstNode},
+    Parser,
+};
 
 // Here are the parsing functions for parsing each command type
 // Due to the different nature of each command, they are separated into different functions
@@ -211,6 +215,32 @@ impl Parser {
         }
 
         (option, value)
+    }
+
+    // Parse the command whose type is chain command.
+    pub fn parse_chain_cmd(&self) -> Option<Box<dyn CommandAstNode>> {
+        if self.is_chain_token() {
+            let cur_token = self.cur_token.borrow().clone();
+            let mut cmd = ChainCommandAstNode::new(cur_token);
+
+            // Move to next Token to parse
+            self.next_token();
+            // Set data destination of chain command.
+            let destination = self.parse_cmd();
+            cmd.set_destination(destination);
+
+            return Some(Box::new(cmd));
+        }
+
+        None
+    }
+
+    // Judge current token if is chain token.
+    fn is_chain_token(&self) -> bool {
+        if self.cur_token.borrow().token_type() == &TokenType::Pipe {
+            return true;
+        }
+        false
     }
 
     // Parse the paths of the command.

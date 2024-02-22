@@ -64,7 +64,7 @@ mod parser_test {
 
     #[test]
     fn test_chain_command_parse() {
-        let parser = Parser::new("ls -l -h | cd | ls --tree --depth=3");
+        let parser = Parser::new("ls -l -h | cat | ls --tree --depth=3");
 
         let cmd = parser.iter().next().unwrap();
         assert_eq!(cmd.cmd_type(), &CommandType::ChainCommand);
@@ -76,7 +76,7 @@ mod parser_test {
         );
 
         let cmd2 = cmd.get_destination().unwrap();
-        assert_eq!(cmd2.get_source().unwrap().token_type(), &TokenType::Cd);
+        assert_eq!(cmd2.get_source().unwrap().token_type(), &TokenType::Cat);
         assert_eq!(cmd2.get_destination().unwrap().token_type(), &TokenType::Ls);
         assert_eq!(
             cmd2.get_destination().unwrap().get_option("--tree"),
