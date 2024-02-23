@@ -56,9 +56,20 @@ impl CatCmd {
 
         // Read the file line by line
         let mut line_num = 1;
+        let mut prev_line_empty = false;
         for line in reader.lines() {
             match line {
                 Ok(line) => {
+                    if self.line_number_non_blank && line.is_empty() {
+                        continue;
+                    } else if self.squeeze_blank && line.is_empty() {
+                        if prev_line_empty {
+                            continue;
+                        }
+                        prev_line_empty = true;
+                    } else {
+                        prev_line_empty = false;
+                    }
                     result.push((line_num, line));
                 }
                 Err(e) => panic!("Error: {}", e),
@@ -74,10 +85,20 @@ impl CatCmd {
             .iter()
             .map(|(num, line_str)| {
                 if self.line_number {
-                    format!("{:>6} {}\n\r", num, line_str)
+                    format!("{:>6} {}", num, line_str)
                 } else {
-                    format!("{}\n\r", line_str)
+                    format!("{}", line_str)
                 }
+            })
+            .map(|line| {
+                if self.show_ends {
+                    format!("{}$", line)
+                } else {
+                    line
+                }
+            })
+            .map(|line| {
+                format!("{}\n\r", line)
             })
             .collect()
     }
@@ -129,7 +150,7 @@ impl From<Box<dyn CommandAstNode>> for CatCmd {
             None => false,
         };
 
-        let show_ends = match cmd.get_option("-E").or(cmd.get_option("--show-ends")) {
+        let show_ends = match cmd.get_option("-e").or(cmd.get_option("--show-ends")) {
             Some(_) => true,
             None => false,
         };
