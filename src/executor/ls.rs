@@ -140,10 +140,8 @@ impl LsCmd {
             self.stream
                 .as_ref()
                 .unwrap()
-                .output(format!("{:<20}", self.color_file_names(&file)));
+                .input(format!("{:<20}", self.color_file_names(&file)));
         }
-        // Add a new line at the end of the output.
-        println!();
     }
 
     // Show details of files and directories
@@ -161,8 +159,8 @@ impl LsCmd {
 
             let file_name_with_color = self.color_file_names(&file);
 
-            self.stream.as_ref().unwrap().output(format!(
-                "{} {:>3} {:>8} {:>8} {:>8} {:>20} {}\n\r",
+            self.stream.as_ref().unwrap().input(format!(
+                "{} {:>3} {:>8} {:>8} {:>8} {:>20} {}",
                 file.permissions,
                 file.link,
                 file.owner,
@@ -183,8 +181,8 @@ impl LsCmd {
     #[cfg(unix)]
     fn show_as_tree_recursively(&self, path: &std::path::PathBuf, depth: u8) {
         if !path.exists() {
-            self.stream.as_ref().unwrap().output(format!(
-                "{:indent$}| - {}\n\r",
+            self.stream.as_ref().unwrap().input(format!(
+                "{:indent$}| - {}",
                 "",
                 "No such file or directory".red(),
                 indent = (depth * 5) as usize
@@ -203,8 +201,8 @@ impl LsCmd {
         let file_name_with_color = self.color_file_names(&file_info);
 
         // Print file name with color.
-        self.stream.as_ref().unwrap().output(format!(
-            "{:indent$}| - {}\n\r",
+        self.stream.as_ref().unwrap().input(format!(
+            "{:indent$}| - {}",
             "",
             file_name_with_color,
             indent = (depth * 5) as usize
@@ -215,8 +213,8 @@ impl LsCmd {
             let paths = match fs::read_dir(path) {
                 Ok(paths) => paths,
                 Err(_) => {
-                    self.stream.as_ref().unwrap().output(format!(
-                        "{:indent$}| - {}\n\r",
+                    self.stream.as_ref().unwrap().input(format!(
+                        "{:indent$}| - {}",
                         "",
                         "Permission denied".red(),
                         indent = (depth * 5) as usize
@@ -243,7 +241,7 @@ impl LsCmd {
         }
     }
 
-    // Turn file size to human readable size.
+    // Turn file size to human-readable size.
     fn human_readable_size(&self, size: u64) -> String {
         let mut size = size as f64;
         let mut unit = "B";
@@ -300,8 +298,6 @@ impl LsCmd {
             }
         };
         let is_hidden: bool = file_name.starts_with(".");
-
-        // println!("{}", format!("{} - {}", file_name, permission).red());
 
         // Get file link number.
         let link_num = metadata.nlink();
@@ -372,8 +368,6 @@ impl LsCmd {
         let owner_name = get_user_by_uid(uid)
             .map(|u| u.name().to_string_lossy().into_owned())
             .unwrap_or_else(|| "Unknown".to_string());
-
-        // println!("{} - {}", owner_name, group_name);
 
         return (owner_name, group_name);
     }
@@ -561,6 +555,8 @@ impl Command for LsCmd {
                 _ => self.show_names(&files),
             };
         });
+
+        self.stream.as_ref().unwrap().output();
     }
 
     fn add_stream(&mut self, stream: Rc<dyn stream::Stream>) {

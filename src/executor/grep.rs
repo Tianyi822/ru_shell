@@ -127,7 +127,7 @@ impl Command for GrepCmd {
         let results = self.grep();
 
         if self.count {
-            self.stream.as_ref().unwrap().output(format!(
+            self.stream.as_ref().unwrap().input(format!(
                 "{}: {}\n",
                 self.file.display(),
                 results.len()
@@ -139,14 +139,16 @@ impl Command for GrepCmd {
                     self.stream
                         .as_ref()
                         .unwrap()
-                        .output(format!("{}: {}\n", line_num, line));
+                        .input(format!("{}: {}\n", line_num, line));
                 }
             } else {
                 for (_, line) in results {
-                    self.stream.as_ref().unwrap().output(format!("{}\n", line));
+                    self.stream.as_ref().unwrap().input(format!("{}\n", line));
                 }
             }
         }
+
+        self.stream.as_ref().unwrap().output();
     }
 
     fn add_stream(&mut self, stream: Rc<dyn stream::Stream>) {
