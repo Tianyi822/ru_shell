@@ -147,8 +147,6 @@ impl Command for GrepCmd {
                 }
             }
         }
-
-        self.stream.as_ref().unwrap().output();
     }
 
     fn add_stream(&mut self, stream: Rc<dyn stream::Stream>) {

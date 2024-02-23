@@ -6,7 +6,7 @@ use std::{
 
 use dirs_next::home_dir;
 
-use crate::{executor, file_operator::FileOperator, stream::console_stream::ConsoleStream};
+use crate::{executor, file_operator::FileOperator, stream::{console_stream::ConsoleStream, Stream}};
 
 pub fn run() {
     // Create history file
@@ -55,5 +55,7 @@ pub fn run() {
         }
 
         executor::execute(&input, console_stream.clone());
+
+        console_stream.output();
     }
 }

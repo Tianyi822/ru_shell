@@ -14,5 +14,5 @@ pub mod pipeline_stream;
 // As for the result type of output and the implementation method, it's determined by the caller.
 pub trait Stream {
     fn input(&self, msg: String);
-    fn output(&self);
+    fn output(&self) -> String;
 }

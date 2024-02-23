@@ -110,7 +110,6 @@ impl CatCmd {
 impl Command for CatCmd {
     fn execute(&self) {
         self.read_file();
-        self.stream.as_ref().unwrap().output();
     }
 
     fn add_stream(&mut self, stream: Rc<dyn Stream>) {

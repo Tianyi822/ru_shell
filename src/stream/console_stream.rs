@@ -1,5 +1,5 @@
-use std::cell::RefCell;
 use super::Stream;
+use std::cell::RefCell;
 
 // Output the result of the code execution to the console.
 // This is a simple implementation of the Stream trait.
@@ -20,11 +20,13 @@ impl Stream for ConsoleStream {
         self.data.borrow_mut().push(msg);
     }
 
-    fn output(&self) {
+    fn output(&self) -> String {
         for msg in self.data.borrow().iter() {
             println!("{}", msg);
         }
 
         self.data.borrow_mut().clear();
+
+        "".to_string()
     }
 }

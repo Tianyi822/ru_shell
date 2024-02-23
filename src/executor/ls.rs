@@ -555,8 +555,6 @@ impl Command for LsCmd {
                 _ => self.show_names(&files),
             };
         });
-
-        self.stream.as_ref().unwrap().output();
     }
 
     fn add_stream(&mut self, stream: Rc<dyn stream::Stream>) {
