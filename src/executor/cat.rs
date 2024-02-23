@@ -80,8 +80,8 @@ impl CatCmd {
         result
     }
 
-    fn read_file(&self) -> Vec<String> {
-        self.read_file_with_options()
+    fn read_file(&self) {
+        let results: Vec<String> = self.read_file_with_options()
             .iter()
             .map(|(num, line_str)| {
                 if self.line_number {
@@ -98,17 +98,18 @@ impl CatCmd {
                 }
             })
             .map(|line| {
-                format!("{}\n\r", line)
-            })
-            .collect()
+                format!("{}", line)
+            }).collect();
+
+        for line in results.iter() {
+            self.stream.as_ref().unwrap().input(line.to_string());
+        }
     }
 }
 
 impl Command for CatCmd {
     fn execute(&self) {
-        self.read_file().iter().for_each(|line: &String| {
-            self.stream.as_ref().unwrap().output(line.to_string());
-        });
+        self.read_file();
     }
 
     fn add_stream(&mut self, stream: Rc<dyn Stream>) {

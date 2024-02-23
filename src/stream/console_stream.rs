@@ -1,17 +1,32 @@
 use super::Stream;
+use std::cell::RefCell;
 
 // Output the result of the code execution to the console.
 // This is a simple implementation of the Stream trait.
-pub struct ConsoleSteam {}
+pub struct ConsoleStream {
+    data: RefCell<Vec<String>>,
+}
 
-impl ConsoleSteam {
+impl ConsoleStream {
     pub fn new() -> Self {
-        Self {}
+        Self {
+            data: RefCell::new(Vec::new()),
+        }
     }
 }
 
-impl Stream for ConsoleSteam {
-    fn output(&self, msg: String) {
-        print!("{}", msg);
+impl Stream for ConsoleStream {
+    fn input(&self, msg: String) {
+        self.data.borrow_mut().push(msg);
+    }
+
+    fn output(&self) -> String {
+        for msg in self.data.borrow().iter() {
+            println!("{}", msg);
+        }
+
+        self.data.borrow_mut().clear();
+
+        "".to_string()
     }
 }

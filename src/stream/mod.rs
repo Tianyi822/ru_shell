@@ -1,4 +1,5 @@
 pub mod console_stream;
+pub mod pipeline_stream;
 
 // This stream is used to output the result of the execution of the code.
 // Its directions include the console, file, and network.
@@ -12,5 +13,6 @@ pub mod console_stream;
 // In conclusion, each 'exe' command has a stream for outputting result, and the stream is passed in when creating the 'exe' command.
 // As for the result type of output and the implementation method, it's determined by the caller.
 pub trait Stream {
-    fn output(&self, msg: String);
+    fn input(&self, msg: String);
+    fn output(&self) -> String;
 }
