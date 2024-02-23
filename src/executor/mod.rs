@@ -8,10 +8,12 @@ use crate::token::token::TokenType;
 use self::cat::CatCmd;
 use self::grep::GrepCmd;
 use self::ls::LsCmd;
+use self::pipeline::Pipeline;
 
 pub mod cat;
 pub mod grep;
 pub mod ls;
+pub mod pipeline;
 
 // Every commands that implement this trait has a 'status' field to represent
 // the status of the command after it has been parsed.
@@ -68,9 +70,7 @@ fn analyze_exe_node(cmd: Box<dyn CommandAstNode>) -> Box<dyn Command> {
 /// Analyze the AST which type is [`parser::CommandType::ChainCommand`].
 fn analyze_chain_node(cmd: Box<dyn CommandAstNode>) -> Box<dyn Command> {
     match cmd.token_type() {
-        TokenType::Pipe => {
-            todo!()
-        }
+        TokenType::Pipe => Box::new(Pipeline::from(cmd)),
         _ => {
             todo!()
         }
