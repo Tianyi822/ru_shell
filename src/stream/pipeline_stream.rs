@@ -20,6 +20,11 @@ impl PipeLineStream {
         }
         result.trim().to_string()
     }
+
+    // The result of this method is used to check if getting the data from the pipeline stream.
+    pub fn is_empty(&self) -> bool {
+        self.data.borrow().is_empty()
+    }
 }
 
 impl Stream for PipeLineStream {
