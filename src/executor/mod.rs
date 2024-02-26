@@ -8,7 +8,7 @@ use crate::token::token::TokenType;
 use self::cat::CatCmd;
 use self::grep::GrepCmd;
 use self::ls::LsCmd;
-use self::pipeline::Pipeline;
+use self::pipeline::PipelineOperator;
 
 pub mod cat;
 pub mod grep;
@@ -32,9 +32,6 @@ pub fn execute(cmd: &str, stream: Rc<dyn Stream>) {
     // Create new Parser
     let parser = Parser::new(cmd);
 
-    // Create new array to save the command
-    let mut cmds: Vec<Box<dyn Command>> = Vec::new();
-
     // Analyze the AST and save the command into an array
     for cmd in parser.iter() {
         let mut cmd = match cmd.cmd_type() {
@@ -44,15 +41,11 @@ pub fn execute(cmd: &str, stream: Rc<dyn Stream>) {
 
         cmd.add_stream(stream.clone());
 
-        cmds.push(cmd);
+        cmd.execute();
     }
 
     // Clear the Parser data
     parser.clear();
-
-    for cmd in cmds.iter() {
-        cmd.execute();
-    }
 }
 
 /// Analyze the AST which type is [`parser::CommandType::ExtCommand`].
@@ -70,7 +63,7 @@ fn analyze_exe_node(cmd: Box<dyn CommandAstNode>) -> Box<dyn Command> {
 /// Analyze the AST which type is [`parser::CommandType::ChainCommand`].
 fn analyze_chain_node(cmd: Box<dyn CommandAstNode>) -> Box<dyn Command> {
     match cmd.token_type() {
-        TokenType::Pipe => Box::new(Pipeline::from(cmd)),
+        TokenType::Pipe => Box::new(PipelineOperator::from(cmd)),
         _ => {
             todo!()
         }
