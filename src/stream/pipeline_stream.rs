@@ -18,7 +18,7 @@ impl PipeLineStream {
         for msg in self.data.borrow().iter() {
             result.push_str(&(msg.to_string() + "\n\r"));
         }
-        result
+        result.trim().to_string()
     }
 }
 
