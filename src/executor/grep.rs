@@ -128,7 +128,7 @@ impl Command for GrepCmd {
 
         if self.count {
             self.stream.as_ref().unwrap().input(format!(
-                "{}: {}\n",
+                "{}: {}",
                 self.file.display(),
                 results.len()
             ));
@@ -139,11 +139,11 @@ impl Command for GrepCmd {
                     self.stream
                         .as_ref()
                         .unwrap()
-                        .input(format!("{}: {}\n", line_num, line));
+                        .input(format!("{}: {}", line_num, line));
                 }
             } else {
                 for (_, line) in results {
-                    self.stream.as_ref().unwrap().input(format!("{}\n", line));
+                    self.stream.as_ref().unwrap().input(format!("{}", line));
                 }
             }
         }
