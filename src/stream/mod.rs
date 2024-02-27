@@ -15,4 +15,5 @@ pub mod pipeline_stream;
 pub trait Stream {
     fn input(&self, msg: String);
     fn output(&self) -> String;
+    fn is_empty(&self) -> bool;
 }

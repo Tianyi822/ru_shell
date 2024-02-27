@@ -1,5 +1,6 @@
-use crate::stream::Stream;
 use std::cell::RefCell;
+
+use crate::stream::Stream;
 
 pub struct PipeLineStream {
     data: RefCell<Vec<String>>,
@@ -20,11 +21,6 @@ impl PipeLineStream {
         }
         result.trim().to_string()
     }
-
-    // The result of this method is used to check if getting the data from the pipeline stream.
-    pub fn is_empty(&self) -> bool {
-        self.data.borrow().is_empty()
-    }
 }
 
 impl Stream for PipeLineStream {
@@ -36,5 +32,10 @@ impl Stream for PipeLineStream {
         let result = self.joint_data();
         self.data.borrow_mut().clear();
         result
+    }
+
+    // The result of this method is used to check if getting the data from the pipeline stream.
+    fn is_empty(&self) -> bool {
+        self.data.borrow().is_empty()
     }
 }
