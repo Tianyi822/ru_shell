@@ -8,8 +8,8 @@ use std::{
 use colored::Colorize;
 use regex::Regex;
 
-use crate::parser::ast_node_trait::CommandAstNode;
 use crate::{executor::Command, stream};
+use crate::parser::ast_node_trait::CommandAstNode;
 
 /*
 The 'grep' command is used to search for a specific string in a file or files.
@@ -33,7 +33,7 @@ pub struct GrepCmd {
     pattern: String,
 
     // The file to search
-    file: PathBuf,
+    file: Option<PathBuf>,
 
     // Whether to ignore case
     ignore_case: bool,
@@ -51,7 +51,7 @@ pub struct GrepCmd {
 }
 
 impl GrepCmd {
-    fn new(pattern: String, file: PathBuf) -> Self {
+    fn new(pattern: String, file: Option<PathBuf>) -> Self {
         GrepCmd {
             pattern,
             file,
@@ -63,13 +63,13 @@ impl GrepCmd {
         }
     }
 
-    // TODO: Implement grep
-    fn grep(&self) -> Vec<(u32, String)> {
+    // match the pattern string from the file
+    fn grep_from_file(&self) -> Vec<(u32, String)> {
         // Collect the results that contain the pattern str.
         let mut result: Vec<(u32, String)> = Vec::new();
 
         // Open the file
-        let file = File::open(&self.file).unwrap();
+        let file = File::open(&self.file.as_ref().unwrap()).unwrap();
         let reader = io::BufReader::new(file);
 
         // Read the file line by line
@@ -89,12 +89,33 @@ impl GrepCmd {
         result
     }
 
+    // match the pattern string from the stream
+    fn grep_from_stream(&self) -> Vec<(u32, String)> {
+        // Collect the results that contain the pattern str.
+        let mut result: Vec<(u32, String)> = Vec::new();
+
+        // Get the data from the stream
+        let data = self.stream.as_ref().unwrap().output();
+
+        let mut line_num = 1;
+        for line in data.lines() {
+            self.match_line(line.to_string()).map(|line: String| {
+                result.push((line_num, line));
+            });
+            line_num += 1;
+        }
+
+        result
+    }
+
     // Match the line with the pattern string
-    fn match_line(&self, mut line: String) -> Option<String> {
+    fn match_line(&self, line: String) -> Option<String> {
         let mut pattern = self.pattern.clone();
+        let mut line_temp = line.clone();
+
         // Check if the line contains the pattern string
         if self.ignore_case {
-            line = line.to_lowercase();
+            line_temp = line_temp.to_lowercase();
             pattern = pattern.to_lowercase();
         }
 
@@ -103,33 +124,41 @@ impl GrepCmd {
 
         if self.invert_match {
             // If the line contains the pattern string, return None
-            if re.is_match(&line) {
+            if re.is_match(&line_temp) {
                 return None;
             }
         } else {
             // If the line does not contain the pattern string, return None
-            if !re.is_match(&line) {
+            if !re.is_match(&line_temp) {
                 return None;
-            } else {
-                // If the line contains the pattern string, colorize the pattern string
-                let gs = self.pattern.red().to_string();
-                // Replace the pattern string with the colorized pattern string
-                line = line.replace(&self.pattern, &gs);
             }
+            // Color the pattern string
+            let find_str = re.find(&line_temp).unwrap();
+            let colored_str = line[find_str.start()..find_str.end()].to_string().red();
+            line_temp = format!(
+                "{}{}{}",
+                line[0..find_str.start()].to_string(),
+                colored_str,
+                line[find_str.end()..line.len()].to_string()
+            );
         }
 
-        Some(line)
+        Some(line_temp)
     }
 }
 
 impl Command for GrepCmd {
     fn execute(&self) {
-        let results = self.grep();
+        let results = if self.stream.as_ref().unwrap().is_empty() {
+            self.grep_from_file()
+        } else {
+            self.grep_from_stream()
+        };
 
         if self.count {
             self.stream.as_ref().unwrap().input(format!(
                 "{}: {}",
-                self.file.display(),
+                self.file.as_ref().unwrap().display(),
                 results.len()
             ));
         } else {
@@ -168,37 +197,41 @@ impl From<Box<dyn CommandAstNode>> for GrepCmd {
         // Get file
         let file = match values.get(1) {
             Some(values) => values,
-            None => panic!("File that should be grepped is not provided"),
+            None => "",
         };
 
-        // Check if file exists
-        let file_buf = PathBuf::from(file);
-        if file_buf.exists() == false {
-            panic!("File {} does not exist", file_buf.display());
-        }
+        let mut grep_cmd = if file.is_empty() {
+            GrepCmd::new(pattern, None)
+        } else {
+            // Check if file exists
+            let file_buf = PathBuf::from(file);
+            if file_buf.exists() == false {
+                panic!("File {} does not exist", file_buf.display());
+            }
 
-        let mut grep_cmd = GrepCmd::new(pattern, file_buf);
+            GrepCmd::new(pattern, Some(file_buf))
+        };
 
         // Get options
-        match cmd.get_option("-i").or(cmd.get_option("--ignore-case")) {
-            Some(_) => grep_cmd.ignore_case = true,
-            None => grep_cmd.ignore_case = false,
-        }
+        grep_cmd.ignore_case = match cmd.get_option("-i").or(cmd.get_option("--ignore-case")) {
+            Some(_) => true,
+            None => false,
+        };
 
-        match cmd.get_option("-v").or(cmd.get_option("--invert-match")) {
-            Some(_) => grep_cmd.invert_match = true,
-            None => grep_cmd.invert_match = false,
-        }
+        grep_cmd.invert_match = match cmd.get_option("-v").or(cmd.get_option("--invert-match")) {
+            Some(_) => true,
+            None => false,
+        };
 
-        match cmd.get_option("-c").or(cmd.get_option("--count")) {
-            Some(_) => grep_cmd.count = true,
-            None => grep_cmd.count = false,
-        }
+        grep_cmd.count = match cmd.get_option("-c").or(cmd.get_option("--count")) {
+            Some(_) => true,
+            None => false,
+        };
 
-        match cmd.get_option("-n").or(cmd.get_option("--line-number")) {
-            Some(_) => grep_cmd.show_line_number = true,
-            None => grep_cmd.show_line_number = false,
-        }
+        grep_cmd.show_line_number = match cmd.get_option("-n").or(cmd.get_option("--line-number")) {
+            Some(_) => true,
+            None => false,
+        };
 
         grep_cmd
     }
