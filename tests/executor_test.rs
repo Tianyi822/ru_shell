@@ -57,4 +57,11 @@ mod executor_test {
         executor::execute("cat -n Cargo.toml", console_stream.clone());
         console_stream.output();
     }
+
+    #[test]
+    fn test_ls_pipeline_grep_cmd() {
+        let console_stream = Rc::new(ConsoleStream::new());
+        executor::execute("ls -l | grep -i \"lock\"", console_stream.clone());
+        console_stream.output();
+    }
 }
