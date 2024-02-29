@@ -22,24 +22,18 @@ pub struct CatCmd {
     // Display $ at end of each line
     show_ends: bool,
 
-    file: PathBuf,
+    file: Option<PathBuf>,
 
     stream: Option<Rc<dyn Stream>>,
 }
 
 impl CatCmd {
-    fn new(
-        line_number: bool,
-        line_number_non_blank: bool,
-        squeeze_blank: bool,
-        show_ends: bool,
-        file: PathBuf,
-    ) -> Self {
+    fn new(file: Option<PathBuf>) -> Self {
         CatCmd {
-            line_number,
-            line_number_non_blank,
-            squeeze_blank,
-            show_ends,
+            line_number: false,
+            line_number_non_blank: false,
+            squeeze_blank: false,
+            show_ends: false,
             file,
             stream: None,
         }
@@ -47,45 +41,50 @@ impl CatCmd {
 }
 
 impl CatCmd {
-    fn read_file_with_options(&self) -> Vec<(u32, String)> {
+    fn read_with_options(&self) -> Vec<(u32, String)> {
+        let data: Vec<String> = if self.stream.as_ref().unwrap().is_empty() {
+            // Get the data from the file
+            let file = File::open(&self.file.as_ref().unwrap()).unwrap();
+            let reader = io::BufReader::new(file);
+            reader.lines().map(|line| {
+                line.unwrap_or_else(|_| {
+                    panic!("Error reading file: {}", self.file.as_ref().unwrap().display());
+                })
+            }).collect()
+        } else {
+            // Get the data from the stream
+            self.stream.as_ref().unwrap().output().lines().map(|line| line.to_string()).collect()
+        };
+
         let mut result: Vec<(u32, String)> = vec![];
 
-        // Open the file
-        let file = File::open(&self.file).unwrap();
-        let reader = io::BufReader::new(file);
-
-        // Read the file line by line
         let mut line_num = 1;
         let mut prev_line_empty = false;
-        for line in reader.lines() {
-            match line {
-                Ok(line) => {
-                    if self.line_number_non_blank && line.is_empty() {
-                        continue;
-                    } else if self.squeeze_blank && line.is_empty() {
-                        if prev_line_empty {
-                            continue;
-                        }
-                        prev_line_empty = true;
-                    } else {
-                        prev_line_empty = false;
-                    }
-                    result.push((line_num, line));
+
+        for line in data.iter() {
+            if self.line_number_non_blank && line.is_empty() {
+                continue;
+            } else if self.squeeze_blank && line.is_empty() {
+                if prev_line_empty {
+                    continue;
                 }
-                Err(e) => panic!("Error: {}", e),
+                prev_line_empty = true;
+            } else {
+                prev_line_empty = false;
             }
+            result.push((line_num, line.trim().to_string()));
             line_num += 1;
         }
 
         result
     }
 
-    fn read_file(&self) {
-        let results: Vec<String> = self.read_file_with_options()
+    fn read(&self) {
+        let results: Vec<String> = self.read_with_options()
             .iter()
             .map(|(num, line_str)| {
                 if self.line_number {
-                    format!("{:>6} {}", num, line_str)
+                    format!("{} {}", num, line_str)
                 } else {
                     format!("{}", line_str)
                 }
@@ -109,7 +108,7 @@ impl CatCmd {
 
 impl Command for CatCmd {
     fn execute(&self) {
-        self.read_file();
+        self.read();
     }
 
     fn add_stream(&mut self, stream: Rc<dyn Stream>) {
@@ -125,43 +124,43 @@ impl From<Box<dyn CommandAstNode>> for CatCmd {
         // Get file
         let file = match values.get(0) {
             Some(values) => values,
-            None => panic!("File is not provided"),
+            None => "",
         };
 
-        // Check if file exists
-        let file_buf = PathBuf::from(file);
-        if file_buf.exists() == false {
-            panic!("File {} does not exist", file_buf.display());
-        }
+        let mut cat_cmd = if file.is_empty() {
+            CatCmd::new(None)
+        } else {
+            // Check if file exists
+            let file_buf = PathBuf::from(file);
+            if file_buf.exists() == false {
+                panic!("File {} does not exist", file_buf.display());
+            }
+
+            CatCmd::new(Some(file_buf))
+        };
 
         // Get options
-        let line_number = match cmd.get_option("-n").or(cmd.get_option("--number")) {
+        cat_cmd.line_number = match cmd.get_option("-n").or(cmd.get_option("--number")) {
             Some(_) => true,
             None => false,
         };
 
-        let line_number_non_blank =
+        cat_cmd.line_number_non_blank =
             match cmd.get_option("-b").or(cmd.get_option("--number-nonblank")) {
                 Some(_) => true,
                 None => false,
             };
 
-        let squeeze_blank = match cmd.get_option("-s").or(cmd.get_option("--squeeze-blank")) {
+        cat_cmd.squeeze_blank = match cmd.get_option("-s").or(cmd.get_option("--squeeze-blank")) {
             Some(_) => true,
             None => false,
         };
 
-        let show_ends = match cmd.get_option("-e").or(cmd.get_option("--show-ends")) {
+        cat_cmd.show_ends = match cmd.get_option("-e").or(cmd.get_option("--show-ends")) {
             Some(_) => true,
             None => false,
         };
 
-        CatCmd::new(
-            line_number,
-            line_number_non_blank,
-            squeeze_blank,
-            show_ends,
-            file_buf,
-        )
+        cat_cmd
     }
 }

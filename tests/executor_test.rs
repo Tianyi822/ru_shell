@@ -64,4 +64,11 @@ mod executor_test {
         executor::execute("ls -l | grep -i \"lock\"", console_stream.clone());
         console_stream.output();
     }
+
+    #[test]
+    fn test_ls_pipeline_cat_cmd() {
+        let console_stream = Rc::new(ConsoleStream::new());
+        executor::execute("ls | cat -n", console_stream.clone());
+        console_stream.output();
+    }
 }

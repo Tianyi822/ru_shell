@@ -132,16 +132,20 @@ impl LsCmd {
     // If don't get any option or use other options that don't define,
     // just show non-hidden files name.
     fn show_names(&self, files: &Vec<FileInfo>) {
+        let mut files_str = String::new();
+
         for file in files.iter() {
             if !self.all && file.is_hidden {
                 continue;
             }
 
-            self.stream
-                .as_ref()
-                .unwrap()
-                .input(format!("{:<20}", self.color_file_names(&file)));
+            files_str.push_str(format!("{:<20}", self.color_file_names(&file)).as_str());
         }
+
+        self.stream
+            .as_ref()
+            .unwrap()
+            .input(files_str);
     }
 
     // Show details of files and directories
