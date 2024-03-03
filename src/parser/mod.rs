@@ -3,6 +3,7 @@ use std::rc::Rc;
 
 use crate::lexer::Lexer;
 use crate::parser::ast_node_trait::CommandAstNode;
+use crate::parser::cmds_ast_node::ChainCommandAstNode;
 
 use crate::token::token::Token;
 use crate::token::token::TokenType;
@@ -103,19 +104,20 @@ impl Parser {
     // Parse the command and return the AST.
     fn parse(&self) {
         loop {
+            // Check if the current token is the end of the file.
             if self.cur_token.borrow().clone().token_type() == &TokenType::Eof {
                 return;
             }
 
             // Check if the current token is a command.
-            if !self.check_wether_is_command() {
+            if !self.check_is_exe_command() {
                 self.collect_error("Invalid command");
                 break;
             }
 
             // Parse the corresponding command based on the token type
             // and return the parsed AST (Abstract Syntax Tree) node.
-            let ast_node: Box<dyn CommandAstNode> = match self.parse_cmd() {
+            let ast_node: Box<dyn CommandAstNode> = match self.parse_cmds() {
                 Some(ext_cmd) => ext_cmd,
                 None => break,
             };
@@ -146,7 +148,7 @@ impl Parser {
     }
 
     // Check if the current token is a command.
-    fn check_wether_is_command(&self) -> bool {
+    fn check_is_exe_command(&self) -> bool {
         let cur_token = self.cur_token.borrow().clone();
         match cur_token.token_type() {
             TokenType::Ls | TokenType::Cd | TokenType::Grep | TokenType::Cat => true,
@@ -161,8 +163,21 @@ impl Parser {
         self.command_ast.borrow_mut().push(ast_node);
     }
 
-    // Parse the command whose type is execute command.
-    fn parse_cmd(&self) -> Option<Box<dyn CommandAstNode>> {
+    fn parse_cmds(&self) -> Option<Box<dyn CommandAstNode>> {
+        let mut ext_cmd = self.parse_exe_cmd();
+
+        while self.check_is_chain_token() {
+            if let Some(mut chain_cmd) = self.parse_chain_cmd() {
+                chain_cmd.set_source(ext_cmd);
+                ext_cmd = Some(chain_cmd);
+            }
+        }
+
+        ext_cmd
+    }
+
+    // Parse the executive command whose type is execute command.
+    fn parse_exe_cmd(&self) -> Option<Box<dyn CommandAstNode>> {
         let cur_token = self.cur_token.borrow().clone();
         // Parse the corresponding command based on the token type
         // and return the parsed AST (Abstract Syntax Tree) node.
@@ -173,12 +188,35 @@ impl Parser {
             _ => None,
         };
 
-        if let Some(mut token) = self.parse_chain_cmd() {
-            token.set_source(ext_cmd);
-            return Some(token);
+        ext_cmd
+    }
+
+
+    // Parse the command whose type is chain command.
+    pub fn parse_chain_cmd(&self) -> Option<Box<dyn CommandAstNode>> {
+        if self.check_is_chain_token() {
+            let cur_token = self.cur_token.borrow().clone();
+            let mut cmd = ChainCommandAstNode::new(cur_token);
+
+            // Move to next Token to parse
+            self.next_token();
+            // Set data destination of chain command.
+            let destination = self.parse_exe_cmd();
+            cmd.set_destination(destination);
+
+            return Some(Box::new(cmd));
         }
 
-        ext_cmd
+        None
+    }
+
+
+    // Judge current token if is chain token.
+    fn check_is_chain_token(&self) -> bool {
+        if self.cur_token.borrow().token_type() == &TokenType::Pipe {
+            return true;
+        }
+        false
     }
 
     // Update the current token and move the position that in Lexer to next token.

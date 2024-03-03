@@ -2,7 +2,7 @@ use crate::token::token::TokenType;
 
 use super::{
     ast_node_trait::CommandAstNode,
-    cmds_ast_node::{ChainCommandAstNode, ExeCommandAstNode},
+    cmds_ast_node::ExeCommandAstNode,
     Parser,
 };
 
@@ -28,10 +28,7 @@ impl Parser {
         // Parse the parameters of the command.
         let mut options: Vec<(String, String)> = Vec::new();
         loop {
-            if *self.cur_token.borrow().token_type() == TokenType::Eof
-                || !(*self.cur_token.borrow().token_type() == TokenType::ShortParam
-                    || *self.cur_token.borrow().token_type() == TokenType::LongParam)
-            {
+            if self.check_weather_is_eof() || !self.check_weather_is_param() {
                 break;
             }
 
@@ -93,10 +90,7 @@ impl Parser {
         // Parse the parameters of the command.
         let mut options: Vec<(String, String)> = Vec::new();
         loop {
-            if *self.cur_token.borrow().token_type() == TokenType::Eof
-                || !(*self.cur_token.borrow().token_type() == TokenType::ShortParam
-                    || *self.cur_token.borrow().token_type() == TokenType::LongParam)
-            {
+            if self.check_weather_is_eof() || !self.check_weather_is_param() {
                 break;
             }
 
@@ -155,10 +149,7 @@ impl Parser {
         // Parse the parameters of the command.
         let mut options: Vec<(String, String)> = Vec::new();
         loop {
-            if *self.cur_token.borrow().token_type() == TokenType::Eof
-                || !(*self.cur_token.borrow().token_type() == TokenType::ShortParam
-                    || *self.cur_token.borrow().token_type() == TokenType::LongParam)
-            {
+            if self.check_weather_is_eof() || !self.check_weather_is_param() {
                 break;
             }
 
@@ -215,32 +206,6 @@ impl Parser {
         }
 
         (option, value)
-    }
-
-    // Parse the command whose type is chain command.
-    pub fn parse_chain_cmd(&self) -> Option<Box<dyn CommandAstNode>> {
-        if self.is_chain_token() {
-            let cur_token = self.cur_token.borrow().clone();
-            let mut cmd = ChainCommandAstNode::new(cur_token);
-
-            // Move to next Token to parse
-            self.next_token();
-            // Set data destination of chain command.
-            let destination = self.parse_cmd();
-            cmd.set_destination(destination);
-
-            return Some(Box::new(cmd));
-        }
-
-        None
-    }
-
-    // Judge current token if is chain token.
-    fn is_chain_token(&self) -> bool {
-        if self.cur_token.borrow().token_type() == &TokenType::Pipe {
-            return true;
-        }
-        false
     }
 
     // Parse the paths of the command.
@@ -320,6 +285,7 @@ impl Parser {
                 || *self.cur_token.borrow().token_type() == TokenType::Slash
                 || *self.cur_token.borrow().token_type() == TokenType::Dot
                 || *self.cur_token.borrow().token_type() == TokenType::Tilde
+                || *self.cur_token.borrow().token_type() == TokenType::Star
             {
                 pattern.push_str(self.cur_token.borrow().literal());
                 self.next_token();
@@ -337,5 +303,14 @@ impl Parser {
         }
 
         Some(pattern)
+    }
+
+    fn check_weather_is_eof(&self) -> bool {
+        *self.cur_token.borrow().token_type() == TokenType::Eof
+    }
+
+    fn check_weather_is_param(&self) -> bool {
+        *self.cur_token.borrow().token_type() == TokenType::ShortParam
+            || *self.cur_token.borrow().token_type() == TokenType::LongParam
     }
 }
