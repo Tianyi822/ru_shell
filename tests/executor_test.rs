@@ -71,4 +71,11 @@ mod executor_test {
         executor::execute("ls | cat -n", console_stream.clone());
         console_stream.output();
     }
+
+    #[test]
+    fn test_more_pipeline() {
+        let console_stream = Rc::new(ConsoleStream::new());
+        executor::execute("ls -l | cat -n | grep \"Car\"", console_stream.clone());
+        console_stream.output();
+    }
 }

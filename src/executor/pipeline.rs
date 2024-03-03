@@ -1,10 +1,9 @@
 use std::rc::Rc;
 
 use crate::{parser::ast_node_trait::CommandAstNode, stream::Stream};
-use crate::executor::analyze_exe_node;
-use crate::stream::pipeline_stream::{self, PipeLineStream};
+use crate::stream::pipeline_stream::PipeLineStream;
 
-use super::Command;
+use super::{analyze_node, Command};
 
 // The pipeline operator is used to transfer the data between commands, and to output the result of the commands.
 pub struct PipelineOperator {
@@ -53,12 +52,12 @@ impl Command for PipelineOperator {
 
 impl From<Box<dyn CommandAstNode>> for PipelineOperator {
     fn from(cmd: Box<dyn CommandAstNode>) -> Self {
-        let pipeline_stream = Rc::new(pipeline_stream::PipeLineStream::new());
+        let pipeline_stream = Rc::new(PipeLineStream::new());
 
-        let mut source_cmd = analyze_exe_node(cmd.get_source().unwrap());
+        let mut source_cmd = analyze_node(cmd.get_source().unwrap());
         source_cmd.add_stream(pipeline_stream.clone());
 
-        let mut destination_cmd = analyze_exe_node(cmd.get_destination().unwrap());
+        let mut destination_cmd = analyze_node(cmd.get_destination().unwrap());
         destination_cmd.add_stream(pipeline_stream.clone());
 
         Self::new(source_cmd, destination_cmd, pipeline_stream)

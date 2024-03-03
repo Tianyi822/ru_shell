@@ -17,7 +17,7 @@ impl PipeLineStream {
     fn joint_data(&self) -> String {
         let mut result = String::new();
         for msg in self.data.borrow().iter() {
-            result.push_str(&(msg.to_string() + "\n\r"));
+            result.push_str(&(msg.to_string() + "\n"));
         }
         result.trim().to_string()
     }
