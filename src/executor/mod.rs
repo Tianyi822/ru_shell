@@ -34,10 +34,7 @@ pub fn execute(cmd: &str, stream: Rc<dyn Stream>) {
 
     // Analyze the AST and save the command into an array
     for cmd in parser.iter() {
-        let mut cmd = match cmd.cmd_type() {
-            CommandType::ExtCommand => analyze_exe_node(cmd),
-            CommandType::ChainCommand => analyze_chain_node(cmd),
-        };
+        let mut cmd = analyze_node(cmd);
 
         cmd.add_stream(stream.clone());
 
@@ -46,6 +43,14 @@ pub fn execute(cmd: &str, stream: Rc<dyn Stream>) {
 
     // Clear the Parser data
     parser.clear();
+}
+
+/// Analyze the AST and return the command.
+fn analyze_node(cmd: Box<dyn CommandAstNode>) -> Box<dyn Command> {
+    match cmd.cmd_type() {
+        CommandType::ExtCommand => analyze_exe_node(cmd),
+        CommandType::ChainCommand => analyze_chain_node(cmd),
+    }
 }
 
 /// Analyze the AST which type is [`parser::CommandType::ExtCommand`].

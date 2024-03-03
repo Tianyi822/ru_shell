@@ -64,28 +64,33 @@ mod parser_test {
 
     #[test]
     fn test_chain_command_parse() {
-        let parser = Parser::new("ls -l -h | cat | ls --tree --depth=3");
+        // This command will be parsed as an AST:
+        //      Pipe
+        //     /    \
+        //   Pipe   Grep
+        //   /  \
+        //  Ls  Cat
+        let parser = Parser::new("ls -l -h | cat | grep -i -n -r \"main\" ~/Programs/Rust/ru-shell");
 
         let cmd = parser.iter().next().unwrap();
         assert_eq!(cmd.cmd_type(), &CommandType::ChainCommand);
         assert_eq!(cmd.token_type(), &TokenType::Pipe);
-        assert_eq!(cmd.get_source().unwrap().token_type(), &TokenType::Ls);
-        assert_eq!(
-            cmd.get_destination().unwrap().token_type(),
-            &TokenType::Pipe
-        );
 
-        let cmd2 = cmd.get_destination().unwrap();
-        assert_eq!(cmd2.get_source().unwrap().token_type(), &TokenType::Cat);
-        assert_eq!(cmd2.get_destination().unwrap().token_type(), &TokenType::Ls);
-        assert_eq!(
-            cmd2.get_destination().unwrap().get_option("--tree"),
-            Some("")
-        );
-        assert_eq!(
-            cmd2.get_destination().unwrap().get_option("--depth"),
-            Some("3")
-        );
+        let first_pipe_source = cmd.get_source().unwrap();
+        assert_eq!(first_pipe_source.cmd_type(), &CommandType::ChainCommand);
+        assert_eq!(first_pipe_source.token_type(), &TokenType::Pipe);
+
+        let second_pipe_source = first_pipe_source.get_source().unwrap();
+        assert_eq!(second_pipe_source.cmd_type(), &CommandType::ExtCommand);
+        assert_eq!(second_pipe_source.token_type(), &TokenType::Ls);
+
+        let second_pipe_destination = first_pipe_source.get_destination().unwrap();
+        assert_eq!(second_pipe_destination.cmd_type(), &CommandType::ExtCommand);
+        assert_eq!(second_pipe_destination.token_type(), &TokenType::Cat);
+
+        let destination = cmd.get_destination().unwrap();
+        assert_eq!(destination.cmd_type(), &CommandType::ExtCommand);
+        assert_eq!(destination.token_type(), &TokenType::Grep);
     }
 
     #[test]
